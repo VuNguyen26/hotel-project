@@ -58,7 +58,7 @@
                         </div>
 
                         <div class="flex items-center gap-3">
-                            <button type="submit" class="btn-warning">Cập nhật</button>
+                            <button type="submit" data-loading-text="Đang cập nhật khách hàng..." class="btn-warning">Cập nhật</button>
                             <a href="{{ route('customers.index') }}" class="btn-secondary">Quay lại</a>
                         </div>
                     </form>

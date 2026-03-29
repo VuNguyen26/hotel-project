@@ -52,7 +52,7 @@
                         </div>
 
                         <div class="flex items-center gap-3">
-                            <button type="submit" class="btn-primary">Lưu</button>
+                            <button type="submit" data-loading-text="Đang lưu loại phòng..." class="btn-primary">Lưu</button>
                             <a href="{{ route('room-types.index') }}" class="btn-secondary">Quay lại</a>
                         </div>
                     </form>

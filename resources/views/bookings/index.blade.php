@@ -268,9 +268,10 @@
                                                     </a>
 
                                                     <form action="{{ route('bookings.destroy', $booking->id) }}"
-                                                          method="POST"
-                                                          class="action-form"
-                                                          onsubmit="return confirm('Bạn có chắc muốn xóa đặt phòng này không?');">
+                                                        method="POST"
+                                                        class="action-form"
+                                                        data-confirm="true"
+                                                        data-confirm-message="Bạn có chắc muốn xóa đặt phòng này không?">
                                                         @csrf
                                                         @method('DELETE')
                                                         <button type="submit"

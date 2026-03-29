@@ -158,8 +158,9 @@
                                                     </a>
 
                                                     <form action="{{ route('rooms.destroy', $room->id) }}"
-                                                          method="POST"
-                                                          onsubmit="return confirm('Bạn có chắc muốn xóa phòng này không?');">
+                                                        method="POST"
+                                                        data-confirm="true"
+                                                        data-confirm-message="Bạn có chắc muốn xóa phòng này không?">
                                                         @csrf
                                                         @method('DELETE')
                                                         <button type="submit"

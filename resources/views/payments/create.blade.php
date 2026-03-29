@@ -91,7 +91,9 @@
                             </div>
 
                             <div class="flex items-center gap-3">
-                                <button type="submit" class="btn-primary">Lưu thanh toán</button>
+                                <button type="submit" data-loading-text="Đang ghi nhận thanh toán..." class="btn-primary">
+                                    Lưu thanh toán
+                                </button>
                                 <a href="{{ route('payments.index') }}" class="btn-secondary">Quay lại</a>
                             </div>
                         </form>

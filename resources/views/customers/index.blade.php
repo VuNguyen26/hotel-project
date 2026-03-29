@@ -125,8 +125,9 @@
                                                     </a>
 
                                                     <form action="{{ route('customers.destroy', $customer->id) }}"
-                                                          method="POST"
-                                                          onsubmit="return confirm('Bạn có chắc muốn xóa khách hàng này không?');">
+                                                        method="POST"
+                                                        data-confirm="true"
+                                                        data-confirm-message="Bạn có chắc muốn xóa khách hàng này không?">
                                                         @csrf
                                                         @method('DELETE')
                                                         <button type="submit"

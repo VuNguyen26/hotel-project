@@ -78,7 +78,7 @@
                             </div>
 
                             <div class="flex items-center gap-3">
-                                <button type="submit" class="btn-primary">Lưu</button>
+                                <button type="submit" data-loading-text="Đang lưu phòng..." class="btn-primary">Lưu</button>
                                 <a href="{{ route('rooms.index') }}" class="btn-secondary">Quay lại</a>
                             </div>
                         </form>
