@@ -8,10 +8,29 @@ use Illuminate\Http\Request;
 
 class RoomController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $rooms = Room::with('roomType')->latest()->get();
-        return view('rooms.index', compact('rooms'));
+        $roomTypes = RoomType::orderBy('name')->get();
+
+        $rooms = Room::with('roomType')
+            ->when($request->filled('keyword'), function ($query) use ($request) {
+                $keyword = trim($request->keyword);
+
+                $query->where(function ($q) use ($keyword) {
+                    $q->where('room_number', 'like', '%' . $keyword . '%')
+                      ->orWhere('note', 'like', '%' . $keyword . '%');
+                });
+            })
+            ->when($request->filled('room_type_id'), function ($query) use ($request) {
+                $query->where('room_type_id', $request->room_type_id);
+            })
+            ->when($request->filled('status'), function ($query) use ($request) {
+                $query->where('status', $request->status);
+            })
+            ->latest()
+            ->get();
+
+        return view('rooms.index', compact('rooms', 'roomTypes'));
     }
 
     public function create()

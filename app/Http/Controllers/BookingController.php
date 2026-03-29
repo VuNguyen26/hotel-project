@@ -10,9 +10,49 @@ use Carbon\Carbon;
 
 class BookingController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $bookings = Booking::with(['customer', 'room.roomType', 'payments'])->latest()->get();
+        $bookings = Booking::with(['customer', 'room.roomType', 'payments'])
+            ->when($request->filled('keyword'), function ($query) use ($request) {
+                $keyword = trim($request->keyword);
+
+                $query->where(function ($q) use ($keyword) {
+                    $q->whereHas('customer', function ($customerQuery) use ($keyword) {
+                        $customerQuery->where('full_name', 'like', '%' . $keyword . '%');
+                    })->orWhereHas('room', function ($roomQuery) use ($keyword) {
+                        $roomQuery->where('room_number', 'like', '%' . $keyword . '%');
+                    });
+                });
+            })
+            ->when($request->filled('status'), function ($query) use ($request) {
+                $query->where('status', $request->status);
+            })
+            ->latest()
+            ->get();
+
+        if ($request->filled('payment_filter')) {
+            $paymentFilter = $request->payment_filter;
+
+            $bookings = $bookings->filter(function ($booking) use ($paymentFilter) {
+                $paidAmount = $booking->payments->where('payment_status', 'paid')->sum('amount');
+                $remainingAmount = max($booking->total_price - $paidAmount, 0);
+
+                if ($paymentFilter === 'unpaid') {
+                    return $paidAmount <= 0;
+                }
+
+                if ($paymentFilter === 'partial') {
+                    return $paidAmount > 0 && $remainingAmount > 0;
+                }
+
+                if ($paymentFilter === 'paid') {
+                    return $booking->total_price > 0 && $remainingAmount <= 0;
+                }
+
+                return true;
+            })->values();
+        }
+
         return view('bookings.index', compact('bookings'));
     }
 

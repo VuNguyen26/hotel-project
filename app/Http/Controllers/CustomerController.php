@@ -7,9 +7,22 @@ use Illuminate\Http\Request;
 
 class CustomerController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $customers = Customer::latest()->get();
+        $customers = Customer::when($request->filled('keyword'), function ($query) use ($request) {
+                $keyword = trim($request->keyword);
+
+                $query->where(function ($q) use ($keyword) {
+                    $q->where('full_name', 'like', '%' . $keyword . '%')
+                      ->orWhere('phone', 'like', '%' . $keyword . '%')
+                      ->orWhere('email', 'like', '%' . $keyword . '%')
+                      ->orWhere('identity_number', 'like', '%' . $keyword . '%')
+                      ->orWhere('address', 'like', '%' . $keyword . '%');
+                });
+            })
+            ->latest()
+            ->get();
+
         return view('customers.index', compact('customers'));
     }
 
