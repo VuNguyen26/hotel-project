@@ -9,19 +9,35 @@ class CustomerController extends Controller
 {
     public function index(Request $request)
     {
+        $allowedSorts = [
+            'created_at' => 'created_at',
+            'full_name' => 'full_name',
+            'phone' => 'phone',
+        ];
+
+        $sortBy = $request->get('sort_by', 'created_at');
+        $sortBy = array_key_exists($sortBy, $allowedSorts) ? $sortBy : 'created_at';
+
+        $sortDir = $request->get('sort_dir', 'desc') === 'asc' ? 'asc' : 'desc';
+
+        $perPage = (int) $request->get('per_page', 10);
+        $perPage = in_array($perPage, [10, 20, 50, 100], true) ? $perPage : 10;
+
         $customers = Customer::when($request->filled('keyword'), function ($query) use ($request) {
                 $keyword = trim($request->keyword);
 
                 $query->where(function ($q) use ($keyword) {
                     $q->where('full_name', 'like', '%' . $keyword . '%')
-                      ->orWhere('phone', 'like', '%' . $keyword . '%')
-                      ->orWhere('email', 'like', '%' . $keyword . '%')
-                      ->orWhere('identity_number', 'like', '%' . $keyword . '%')
-                      ->orWhere('address', 'like', '%' . $keyword . '%');
+                    ->orWhere('phone', 'like', '%' . $keyword . '%')
+                    ->orWhere('email', 'like', '%' . $keyword . '%')
+                    ->orWhere('identity_number', 'like', '%' . $keyword . '%')
+                    ->orWhere('address', 'like', '%' . $keyword . '%');
                 });
             })
-            ->latest()
-            ->get();
+            ->orderBy($allowedSorts[$sortBy], $sortDir)
+            ->orderBy('id', 'desc')
+            ->paginate($perPage)
+            ->withQueryString();
 
         return view('customers.index', compact('customers'));
     }

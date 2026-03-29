@@ -12,7 +12,27 @@ class BookingController extends Controller
 {
     public function index(Request $request)
     {
-        $bookings = Booking::with(['customer', 'room.roomType', 'payments'])
+        $allowedSorts = [
+            'created_at' => 'created_at',
+            'check_in_date' => 'check_in_date',
+            'check_out_date' => 'check_out_date',
+            'total_price' => 'total_price',
+        ];
+
+        $sortBy = $request->get('sort_by', 'created_at');
+        $sortBy = array_key_exists($sortBy, $allowedSorts) ? $sortBy : 'created_at';
+
+        $sortDir = $request->get('sort_dir', 'desc') === 'asc' ? 'asc' : 'desc';
+
+        $perPage = (int) $request->get('per_page', 10);
+        $perPage = in_array($perPage, [10, 20, 50, 100], true) ? $perPage : 10;
+
+        $bookings = Booking::with(['customer', 'room.roomType'])
+            ->withSum([
+                'payments as paid_amount' => function ($query) {
+                    $query->where('payment_status', 'paid');
+                }
+            ], 'amount')
             ->when($request->filled('keyword'), function ($query) use ($request) {
                 $keyword = trim($request->keyword);
 
@@ -27,44 +47,31 @@ class BookingController extends Controller
             ->when($request->filled('status'), function ($query) use ($request) {
                 $query->where('status', $request->status);
             })
-            ->latest()
-            ->get();
-
-        if ($request->filled('payment_filter')) {
-            $paymentFilter = $request->payment_filter;
-
-            $bookings = $bookings->filter(function ($booking) use ($paymentFilter) {
-                $paidAmount = $booking->payments->where('payment_status', 'paid')->sum('amount');
-                $remainingAmount = max($booking->total_price - $paidAmount, 0);
-
-                if ($paymentFilter === 'unpaid') {
-                    return $paidAmount <= 0;
+            ->when($request->filled('payment_filter'), function ($query) use ($request) {
+                if ($request->payment_filter === 'unpaid') {
+                    $query->havingRaw('COALESCE(paid_amount, 0) = 0');
+                } elseif ($request->payment_filter === 'partial') {
+                    $query->havingRaw('COALESCE(paid_amount, 0) > 0 AND COALESCE(paid_amount, 0) < total_price');
+                } elseif ($request->payment_filter === 'paid') {
+                    $query->havingRaw('total_price > 0 AND COALESCE(paid_amount, 0) >= total_price');
                 }
-
-                if ($paymentFilter === 'partial') {
-                    return $paidAmount > 0 && $remainingAmount > 0;
-                }
-
-                if ($paymentFilter === 'paid') {
-                    return $booking->total_price > 0 && $remainingAmount <= 0;
-                }
-
-                return true;
-            })->values();
-        }
+            })
+            ->orderBy($allowedSorts[$sortBy], $sortDir)
+            ->orderBy('id', 'desc')
+            ->paginate($perPage)
+            ->withQueryString();
 
         return view('bookings.index', compact('bookings'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
         $customers = Customer::orderBy('full_name')->get();
-        $rooms = Room::with('roomType')
-            ->where('status', 'available')
-            ->orderBy('room_number')
-            ->get();
+        $checkInDate = $request->query('check_in_date');
+        $checkOutDate = $request->query('check_out_date');
+        $rooms = $this->getAvailableRooms($checkInDate, $checkOutDate);
 
-        return view('bookings.create', compact('customers', 'rooms'));
+        return view('bookings.create', compact('customers', 'rooms', 'checkInDate', 'checkOutDate'));
     }
 
     public function store(Request $request)
@@ -89,18 +96,24 @@ class BookingController extends Controller
 
         $room = Room::with('roomType')->findOrFail($request->room_id);
 
-        if ($room->status !== 'available') {
+        if ($room->status === 'maintenance') {
             return redirect()->back()->withInput()->withErrors([
-                'room_id' => 'Phòng này hiện không còn trống.',
+                'room_id' => 'Phòng này đang bảo trì, không thể đặt.',
+            ]);
+        }
+
+        if ($this->hasBookingConflict($room->id, $request->check_in_date, $request->check_out_date)) {
+            return redirect()->back()->withInput()->withErrors([
+                'room_id' => 'Phòng này đã có booking trùng trong khoảng ngày đã chọn.',
             ]);
         }
 
         $checkIn = Carbon::parse($request->check_in_date);
         $checkOut = Carbon::parse($request->check_out_date);
-        $nights = $checkIn->diffInDays($checkOut);
+        $nights = max($checkIn->diffInDays($checkOut), 1);
         $totalPrice = $nights * $room->roomType->price;
 
-        $booking = Booking::create([
+        Booking::create([
             'customer_id' => $request->customer_id,
             'room_id' => $request->room_id,
             'check_in_date' => $request->check_in_date,
@@ -111,22 +124,56 @@ class BookingController extends Controller
             'status' => $request->status,
         ]);
 
-        $this->syncRoomStatus($room, $booking->status);
+        $this->refreshRoomStatus($room);
 
         return redirect()->route('bookings.index')->with('success', 'Tạo đặt phòng thành công.');
     }
 
     public function show(Booking $booking)
     {
-        //
+        $booking->load([
+            'customer',
+            'room.roomType',
+            'payments' => function ($query) {
+                $query->latest('paid_at')->latest('id');
+            },
+        ]);
+
+        $nights = max(
+            Carbon::parse($booking->check_in_date)->diffInDays(Carbon::parse($booking->check_out_date)),
+            1
+        );
+
+        $paidAmount = $booking->payments
+            ->where('payment_status', 'paid')
+            ->sum('amount');
+
+        $remainingAmount = max($booking->total_price - $paidAmount, 0);
+
+        $paymentProgress = $booking->total_price > 0
+            ? min(round(($paidAmount / $booking->total_price) * 100), 100)
+            : 0;
+
+        $invoiceCode = 'INV-' . $booking->created_at->format('Ymd') . '-' . str_pad($booking->id, 6, '0', STR_PAD_LEFT);
+
+        return view('bookings.show', compact(
+            'booking',
+            'nights',
+            'paidAmount',
+            'remainingAmount',
+            'paymentProgress',
+            'invoiceCode'
+        ));
     }
 
-    public function edit(Booking $booking)
+    public function edit(Request $request, Booking $booking)
     {
         $customers = Customer::orderBy('full_name')->get();
-        $rooms = Room::with('roomType')->orderBy('room_number')->get();
+        $checkInDate = $request->query('check_in_date', old('check_in_date', $booking->check_in_date));
+        $checkOutDate = $request->query('check_out_date', old('check_out_date', $booking->check_out_date));
+        $rooms = $this->getAvailableRooms($checkInDate, $checkOutDate, $booking->id);
 
-        return view('bookings.edit', compact('booking', 'customers', 'rooms'));
+        return view('bookings.edit', compact('booking', 'customers', 'rooms', 'checkInDate', 'checkOutDate'));
     }
 
     public function update(Request $request, Booking $booking)
@@ -152,18 +199,22 @@ class BookingController extends Controller
         $oldRoom = Room::findOrFail($booking->room_id);
         $newRoom = Room::with('roomType')->findOrFail($request->room_id);
 
-        if ($booking->room_id != $request->room_id && $newRoom->status !== 'available') {
+        if ($newRoom->status === 'maintenance') {
             return redirect()->back()->withInput()->withErrors([
-                'room_id' => 'Phòng mới chọn hiện không còn trống.',
+                'room_id' => 'Phòng này đang bảo trì, không thể đặt.',
+            ]);
+        }
+
+        if ($this->hasBookingConflict($newRoom->id, $request->check_in_date, $request->check_out_date, $booking->id)) {
+            return redirect()->back()->withInput()->withErrors([
+                'room_id' => 'Phòng này đã có booking trùng trong khoảng ngày đã chọn.',
             ]);
         }
 
         $checkIn = Carbon::parse($request->check_in_date);
         $checkOut = Carbon::parse($request->check_out_date);
-        $nights = $checkIn->diffInDays($checkOut);
+        $nights = max($checkIn->diffInDays($checkOut), 1);
         $totalPrice = $nights * $newRoom->roomType->price;
-
-        $oldRoomId = $booking->room_id;
 
         $booking->update([
             'customer_id' => $request->customer_id,
@@ -176,11 +227,11 @@ class BookingController extends Controller
             'status' => $request->status,
         ]);
 
-        if ($oldRoomId != $newRoom->id) {
-            $oldRoom->update(['status' => 'available']);
-        }
+        $this->refreshRoomStatus($newRoom);
 
-        $this->syncRoomStatus($newRoom, $booking->status);
+        if ($oldRoom->id !== $newRoom->id) {
+            $this->refreshRoomStatus($oldRoom);
+        }
 
         return redirect()->route('bookings.index')->with('success', 'Cập nhật đặt phòng thành công.');
     }
@@ -191,6 +242,13 @@ class BookingController extends Controller
             'status' => 'required|in:pending,confirmed,checked_in,checked_out,cancelled',
         ]);
 
+        if (
+            in_array($request->status, ['pending', 'confirmed', 'checked_in'])
+            && $this->hasBookingConflict($booking->room_id, $booking->check_in_date, $booking->check_out_date, $booking->id)
+        ) {
+            return redirect()->route('bookings.index')->with('error', 'Booking này đang bị trùng lịch với booking khác, không thể chuyển sang trạng thái giữ phòng.');
+        }
+
         $booking->update([
             'status' => $request->status,
         ]);
@@ -198,7 +256,7 @@ class BookingController extends Controller
         $room = Room::find($booking->room_id);
 
         if ($room) {
-            $this->syncRoomStatus($room, $booking->status);
+            $this->refreshRoomStatus($room);
         }
 
         return redirect()->route('bookings.index')->with('success', 'Cập nhật trạng thái booking thành công.');
@@ -208,23 +266,84 @@ class BookingController extends Controller
     {
         $room = Room::find($booking->room_id);
 
-        if ($room) {
-            $room->update(['status' => 'available']);
-        }
-
         $booking->delete();
+
+        if ($room) {
+            $this->refreshRoomStatus($room);
+        }
 
         return redirect()->route('bookings.index')->with('success', 'Xóa đặt phòng thành công.');
     }
 
-    private function syncRoomStatus(Room $room, string $bookingStatus): void
+    private function getAvailableRooms(?string $checkInDate, ?string $checkOutDate, ?int $ignoreBookingId = null)
     {
-        if ($bookingStatus === 'confirmed') {
-            $room->update(['status' => 'booked']);
-        } elseif ($bookingStatus === 'checked_in') {
-            $room->update(['status' => 'occupied']);
-        } elseif (in_array($bookingStatus, ['checked_out', 'cancelled', 'pending'])) {
-            $room->update(['status' => 'available']);
+        if (!$this->isValidDateRange($checkInDate, $checkOutDate)) {
+            return collect();
         }
+
+        return Room::with('roomType')
+            ->where('status', '!=', 'maintenance')
+            ->whereDoesntHave('bookings', function ($bookingQuery) use ($checkInDate, $checkOutDate, $ignoreBookingId) {
+                $bookingQuery->whereIn('status', ['pending', 'confirmed', 'checked_in'])
+                    ->where('check_in_date', '<', $checkOutDate)
+                    ->where('check_out_date', '>', $checkInDate)
+                    ->when($ignoreBookingId, function ($q) use ($ignoreBookingId) {
+                        $q->where('id', '!=', $ignoreBookingId);
+                    });
+            })
+            ->orderBy('room_number')
+            ->get();
+    }
+
+    private function hasBookingConflict(int $roomId, string $checkInDate, string $checkOutDate, ?int $ignoreBookingId = null): bool
+    {
+        return Booking::where('room_id', $roomId)
+            ->whereIn('status', ['pending', 'confirmed', 'checked_in'])
+            ->where('check_in_date', '<', $checkOutDate)
+            ->where('check_out_date', '>', $checkInDate)
+            ->when($ignoreBookingId, function ($query) use ($ignoreBookingId) {
+                $query->where('id', '!=', $ignoreBookingId);
+            })
+            ->exists();
+    }
+
+    private function isValidDateRange(?string $checkInDate, ?string $checkOutDate): bool
+    {
+        if (!$checkInDate || !$checkOutDate) {
+            return false;
+        }
+
+        return Carbon::parse($checkOutDate)->gt(Carbon::parse($checkInDate));
+    }
+
+    private function refreshRoomStatus(Room $room): void
+    {
+        if ($room->status === 'maintenance') {
+            return;
+        }
+
+        $room->loadMissing('bookings');
+
+        $hasCheckedInBooking = $room->bookings
+            ->where('status', 'checked_in')
+            ->isNotEmpty();
+
+        if ($hasCheckedInBooking) {
+            $room->update(['status' => 'occupied']);
+            return;
+        }
+
+        $today = now()->toDateString();
+
+        $hasReservedBooking = $room->bookings
+            ->whereIn('status', ['pending', 'confirmed'])
+            ->filter(function ($booking) use ($today) {
+                return $booking->check_out_date >= $today;
+            })
+            ->isNotEmpty();
+
+        $room->update([
+            'status' => $hasReservedBooking ? 'booked' : 'available',
+        ]);
     }
 }

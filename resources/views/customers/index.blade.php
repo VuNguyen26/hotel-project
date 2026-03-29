@@ -5,13 +5,13 @@
                 Danh sách khách hàng
             </h2>
             <p class="mt-1 text-sm text-slate-500">
-                Tìm kiếm khách hàng theo tên, số điện thoại, email, CCCD hoặc địa chỉ.
+                Tìm kiếm, sắp xếp và phân trang danh sách khách hàng.
             </p>
         </div>
     </x-slot>
 
     <div class="py-8">
-        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-6">
+        <div class="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
             @if(session('success'))
                 <div class="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-700">
                     {{ session('success') }}
@@ -19,8 +19,8 @@
             @endif
 
             <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                <form action="{{ route('customers.index') }}" method="GET" class="grid grid-cols-1 gap-4 md:grid-cols-[1fr_auto_auto]">
-                    <div>
+                <form action="{{ route('customers.index') }}" method="GET" class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
+                    <div class="xl:col-span-2">
                         <label class="mb-1 block text-sm font-medium text-slate-700">Từ khóa</label>
                         <input
                             type="text"
@@ -31,13 +31,39 @@
                         >
                     </div>
 
-                    <div class="flex items-end">
+                    <div>
+                        <label class="mb-1 block text-sm font-medium text-slate-700">Sắp xếp theo</label>
+                        <select name="sort_by" class="w-full rounded-xl border border-slate-300 px-4 py-3 focus:border-blue-500 focus:ring-blue-500">
+                            <option value="created_at" {{ request('sort_by', 'created_at') == 'created_at' ? 'selected' : '' }}>Ngày tạo</option>
+                            <option value="full_name" {{ request('sort_by') == 'full_name' ? 'selected' : '' }}>Họ tên</option>
+                            <option value="phone" {{ request('sort_by') == 'phone' ? 'selected' : '' }}>Số điện thoại</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="mb-1 block text-sm font-medium text-slate-700">Thứ tự</label>
+                        <select name="sort_dir" class="w-full rounded-xl border border-slate-300 px-4 py-3 focus:border-blue-500 focus:ring-blue-500">
+                            <option value="desc" {{ request('sort_dir', 'desc') == 'desc' ? 'selected' : '' }}>Giảm dần</option>
+                            <option value="asc" {{ request('sort_dir') == 'asc' ? 'selected' : '' }}>Tăng dần</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="mb-1 block text-sm font-medium text-slate-700">Mỗi trang</label>
+                        <select name="per_page" class="w-full rounded-xl border border-slate-300 px-4 py-3 focus:border-blue-500 focus:ring-blue-500">
+                            @foreach([10, 20, 50, 100] as $size)
+                                <option value="{{ $size }}" {{ (int) request('per_page', 10) === $size ? 'selected' : '' }}>
+                                    {{ $size }} dòng
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="xl:col-span-5 flex flex-wrap items-end gap-3">
                         <button type="submit" class="rounded-xl bg-blue-600 px-5 py-3 text-sm font-medium text-white hover:bg-blue-700">
                             Lọc
                         </button>
-                    </div>
 
-                    <div class="flex items-end">
                         <a href="{{ route('customers.index') }}" class="rounded-xl bg-slate-200 px-5 py-3 text-sm font-medium text-slate-700 hover:bg-slate-300">
                             Đặt lại
                         </a>
@@ -50,7 +76,7 @@
                     <div>
                         <h3 class="text-lg font-bold text-slate-900">Các khách hàng hiện có</h3>
                         <p class="mt-1 text-sm text-slate-500">
-                            Kết quả tìm thấy: {{ $customers->count() }} khách hàng
+                            Hiển thị {{ $customers->firstItem() ?? 0 }} - {{ $customers->lastItem() ?? 0 }} / {{ $customers->total() }} khách hàng
                         </p>
                     </div>
 
@@ -81,10 +107,10 @@
                                         <tr class="hover:bg-slate-50">
                                             <td class="border-b border-slate-100 px-4 py-4 text-sm text-slate-700">{{ $customer->id }}</td>
                                             <td class="border-b border-slate-100 px-4 py-4 text-sm font-medium text-slate-800">{{ $customer->full_name }}</td>
-                                            <td class="border-b border-slate-100 px-4 py-4 text-sm text-slate-700">{{ $customer->phone }}</td>
-                                            <td class="border-b border-slate-100 px-4 py-4 text-sm text-slate-700">{{ $customer->email }}</td>
-                                            <td class="border-b border-slate-100 px-4 py-4 text-sm text-slate-700">{{ $customer->identity_number }}</td>
-                                            <td class="border-b border-slate-100 px-4 py-4 text-sm text-slate-700">{{ $customer->address }}</td>
+                                            <td class="border-b border-slate-100 px-4 py-4 text-sm text-slate-700">{{ $customer->phone ?: '—' }}</td>
+                                            <td class="border-b border-slate-100 px-4 py-4 text-sm text-slate-700">{{ $customer->email ?: '—' }}</td>
+                                            <td class="border-b border-slate-100 px-4 py-4 text-sm text-slate-700">{{ $customer->identity_number ?: '—' }}</td>
+                                            <td class="border-b border-slate-100 px-4 py-4 text-sm text-slate-700">{{ $customer->address ?: '—' }}</td>
                                             <td class="border-b border-slate-100 px-4 py-4 text-sm text-slate-700">{{ $customer->created_at->format('d/m/Y H:i') }}</td>
                                             <td class="border-b border-slate-100 px-4 py-4">
                                                 <div class="flex items-center justify-center gap-2">
@@ -109,6 +135,16 @@
                                     @endforeach
                                 </tbody>
                             </table>
+                        </div>
+
+                        <div class="mt-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                            <p class="text-sm text-slate-500">
+                                Đang hiển thị {{ $customers->firstItem() ?? 0 }} - {{ $customers->lastItem() ?? 0 }} trong tổng {{ $customers->total() }} khách hàng
+                            </p>
+
+                            <div>
+                                {{ $customers->links() }}
+                            </div>
                         </div>
                     @else
                         <div class="rounded-2xl border border-dashed border-slate-300 px-6 py-10 text-center text-slate-500">

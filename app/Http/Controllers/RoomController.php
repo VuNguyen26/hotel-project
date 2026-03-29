@@ -12,13 +12,27 @@ class RoomController extends Controller
     {
         $roomTypes = RoomType::orderBy('name')->get();
 
+        $allowedSorts = [
+            'created_at' => 'created_at',
+            'room_number' => 'room_number',
+            'floor' => 'floor',
+        ];
+
+        $sortBy = $request->get('sort_by', 'created_at');
+        $sortBy = array_key_exists($sortBy, $allowedSorts) ? $sortBy : 'created_at';
+
+        $sortDir = $request->get('sort_dir', 'desc') === 'asc' ? 'asc' : 'desc';
+
+        $perPage = (int) $request->get('per_page', 10);
+        $perPage = in_array($perPage, [10, 20, 50, 100], true) ? $perPage : 10;
+
         $rooms = Room::with('roomType')
             ->when($request->filled('keyword'), function ($query) use ($request) {
                 $keyword = trim($request->keyword);
 
                 $query->where(function ($q) use ($keyword) {
                     $q->where('room_number', 'like', '%' . $keyword . '%')
-                      ->orWhere('note', 'like', '%' . $keyword . '%');
+                    ->orWhere('note', 'like', '%' . $keyword . '%');
                 });
             })
             ->when($request->filled('room_type_id'), function ($query) use ($request) {
@@ -27,8 +41,10 @@ class RoomController extends Controller
             ->when($request->filled('status'), function ($query) use ($request) {
                 $query->where('status', $request->status);
             })
-            ->latest()
-            ->get();
+            ->orderBy($allowedSorts[$sortBy], $sortDir)
+            ->orderBy('id', 'desc')
+            ->paginate($perPage)
+            ->withQueryString();
 
         return view('rooms.index', compact('rooms', 'roomTypes'));
     }

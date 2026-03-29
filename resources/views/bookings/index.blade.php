@@ -5,21 +5,27 @@
                 Danh sách đặt phòng
             </h2>
             <p class="mt-1 text-sm text-slate-500">
-                Tìm kiếm booking theo tên khách, số phòng, trạng thái và thanh toán.
+                Tìm kiếm, lọc, sắp xếp và phân trang booking theo tên khách, số phòng, trạng thái và thanh toán.
             </p>
         </div>
     </x-slot>
 
     <div class="py-8">
-        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-6">
+        <div class="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
             @if(session('success'))
                 <div class="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-700">
                     {{ session('success') }}
                 </div>
             @endif
 
+            @if(session('error'))
+                <div class="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-rose-700">
+                    {{ session('error') }}
+                </div>
+            @endif
+
             <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                <form action="{{ route('bookings.index') }}" method="GET" class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
+                <form action="{{ route('bookings.index') }}" method="GET" class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-7">
                     <div class="xl:col-span-2">
                         <label class="mb-1 block text-sm font-medium text-slate-700">Từ khóa</label>
                         <input
@@ -33,10 +39,7 @@
 
                     <div>
                         <label class="mb-1 block text-sm font-medium text-slate-700">Trạng thái booking</label>
-                        <select
-                            name="status"
-                            class="w-full rounded-xl border border-slate-300 px-4 py-3 focus:border-blue-500 focus:ring-blue-500"
-                        >
+                        <select name="status" class="w-full rounded-xl border border-slate-300 px-4 py-3 focus:border-blue-500 focus:ring-blue-500">
                             <option value="">Tất cả</option>
                             <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Chờ xác nhận</option>
                             <option value="confirmed" {{ request('status') == 'confirmed' ? 'selected' : '' }}>Đã xác nhận</option>
@@ -48,10 +51,7 @@
 
                     <div>
                         <label class="mb-1 block text-sm font-medium text-slate-700">Thanh toán</label>
-                        <select
-                            name="payment_filter"
-                            class="w-full rounded-xl border border-slate-300 px-4 py-3 focus:border-blue-500 focus:ring-blue-500"
-                        >
+                        <select name="payment_filter" class="w-full rounded-xl border border-slate-300 px-4 py-3 focus:border-blue-500 focus:ring-blue-500">
                             <option value="">Tất cả</option>
                             <option value="unpaid" {{ request('payment_filter') == 'unpaid' ? 'selected' : '' }}>Chưa thanh toán</option>
                             <option value="partial" {{ request('payment_filter') == 'partial' ? 'selected' : '' }}>Thanh toán một phần</option>
@@ -59,7 +59,36 @@
                         </select>
                     </div>
 
-                    <div class="flex items-end gap-3">
+                    <div>
+                        <label class="mb-1 block text-sm font-medium text-slate-700">Sắp xếp theo</label>
+                        <select name="sort_by" class="w-full rounded-xl border border-slate-300 px-4 py-3 focus:border-blue-500 focus:ring-blue-500">
+                            <option value="created_at" {{ request('sort_by', 'created_at') == 'created_at' ? 'selected' : '' }}>Ngày tạo</option>
+                            <option value="check_in_date" {{ request('sort_by') == 'check_in_date' ? 'selected' : '' }}>Ngày nhận phòng</option>
+                            <option value="check_out_date" {{ request('sort_by') == 'check_out_date' ? 'selected' : '' }}>Ngày trả phòng</option>
+                            <option value="total_price" {{ request('sort_by') == 'total_price' ? 'selected' : '' }}>Tổng tiền</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="mb-1 block text-sm font-medium text-slate-700">Thứ tự</label>
+                        <select name="sort_dir" class="w-full rounded-xl border border-slate-300 px-4 py-3 focus:border-blue-500 focus:ring-blue-500">
+                            <option value="desc" {{ request('sort_dir', 'desc') == 'desc' ? 'selected' : '' }}>Giảm dần</option>
+                            <option value="asc" {{ request('sort_dir') == 'asc' ? 'selected' : '' }}>Tăng dần</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="mb-1 block text-sm font-medium text-slate-700">Mỗi trang</label>
+                        <select name="per_page" class="w-full rounded-xl border border-slate-300 px-4 py-3 focus:border-blue-500 focus:ring-blue-500">
+                            @foreach([10, 20, 50, 100] as $size)
+                                <option value="{{ $size }}" {{ (int) request('per_page', 10) === $size ? 'selected' : '' }}>
+                                    {{ $size }} dòng
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="xl:col-span-7 flex flex-wrap items-end gap-3">
                         <button type="submit" class="rounded-xl bg-blue-600 px-5 py-3 text-sm font-medium text-white hover:bg-blue-700">
                             Lọc
                         </button>
@@ -76,7 +105,7 @@
                     <div>
                         <h3 class="text-lg font-bold text-slate-900">Các đặt phòng hiện có</h3>
                         <p class="mt-1 text-sm text-slate-500">
-                            Kết quả tìm thấy: {{ $bookings->count() }} booking
+                            Hiển thị {{ $bookings->firstItem() ?? 0 }} - {{ $bookings->lastItem() ?? 0 }} / {{ $bookings->total() }} booking
                         </p>
                     </div>
 
@@ -111,7 +140,7 @@
                                 <tbody>
                                     @foreach($bookings as $booking)
                                         @php
-                                            $paidAmount = $booking->payments->where('payment_status', 'paid')->sum('amount');
+                                            $paidAmount = (float) ($booking->paid_amount ?? 0);
                                             $remainingAmount = max($booking->total_price - $paidAmount, 0);
                                         @endphp
 
@@ -128,22 +157,16 @@
 
                                             <td class="border-b border-slate-100 px-4 py-4 text-sm table-badge-cell">
                                                 @if($paidAmount >= $booking->total_price && $booking->total_price > 0)
-                                                    <span class="badge badge-green">
-                                                        Đã thanh toán
-                                                    </span>
+                                                    <span class="badge badge-green">Đã thanh toán</span>
                                                 @elseif($paidAmount > 0)
                                                     <div class="flex flex-col gap-1">
-                                                        <span class="badge badge-amber w-fit">
-                                                            Một phần
-                                                        </span>
-                                                        <span class="text-xs text-slate-500 whitespace-nowrap">
+                                                        <span class="badge badge-amber w-fit">Một phần</span>
+                                                        <span class="whitespace-nowrap text-xs text-slate-500">
                                                             Còn {{ number_format($remainingAmount, 0, ',', '.') }} VNĐ
                                                         </span>
                                                     </div>
                                                 @else
-                                                    <span class="badge badge-rose">
-                                                        Chưa thanh toán
-                                                    </span>
+                                                    <span class="badge badge-rose">Chưa thanh toán</span>
                                                 @endif
                                             </td>
 
@@ -183,7 +206,6 @@
                                                                 Hủy
                                                             </button>
                                                         </form>
-
                                                     @elseif($booking->status === 'confirmed')
                                                         <form action="{{ route('bookings.update-status', $booking->id) }}" method="POST" class="action-form">
                                                             @csrf
@@ -202,7 +224,6 @@
                                                                 Hủy
                                                             </button>
                                                         </form>
-
                                                     @elseif($booking->status === 'checked_in')
                                                         <form action="{{ route('bookings.update-status', $booking->id) }}" method="POST" class="action-form">
                                                             @csrf
@@ -212,7 +233,6 @@
                                                                 Check-out
                                                             </button>
                                                         </form>
-
                                                     @else
                                                         <span class="text-xs text-slate-400">Không có</span>
                                                     @endif
@@ -223,20 +243,27 @@
                                                 <div class="action-stack">
                                                     @if($booking->status !== 'cancelled' && $remainingAmount > 0)
                                                         <a href="{{ route('payments.create', ['booking' => $booking->id]) }}"
-                                                            class="action-btn-sm bg-violet-600 hover:bg-violet-700">
+                                                           class="action-btn-sm bg-violet-600 hover:bg-violet-700">
                                                             Thanh toán
                                                         </a>
                                                     @endif
 
-                                                   <a href="{{ route('bookings.edit', $booking->id) }}"
-                                                        class="action-btn-sm bg-amber-500 hover:bg-amber-600">
+                                                    @if (Route::has('bookings.show'))
+                                                        <a href="{{ route('bookings.show', $booking->id) }}"
+                                                           class="action-btn-sm bg-slate-700 hover:bg-slate-800">
+                                                            Phiếu
+                                                        </a>
+                                                    @endif
+
+                                                    <a href="{{ route('bookings.edit', $booking->id) }}"
+                                                       class="action-btn-sm bg-amber-500 hover:bg-amber-600">
                                                         Sửa
                                                     </a>
 
                                                     <form action="{{ route('bookings.destroy', $booking->id) }}"
-                                                        method="POST"
-                                                        class="action-form"
-                                                        onsubmit="return confirm('Bạn có chắc muốn xóa đặt phòng này không?');">
+                                                          method="POST"
+                                                          class="action-form"
+                                                          onsubmit="return confirm('Bạn có chắc muốn xóa đặt phòng này không?');">
                                                         @csrf
                                                         @method('DELETE')
                                                         <button type="submit"
@@ -250,6 +277,16 @@
                                     @endforeach
                                 </tbody>
                             </table>
+                        </div>
+
+                        <div class="mt-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                            <p class="text-sm text-slate-500">
+                                Đang hiển thị {{ $bookings->firstItem() ?? 0 }} - {{ $bookings->lastItem() ?? 0 }} trong tổng {{ $bookings->total() }} booking
+                            </p>
+
+                            <div>
+                                {{ $bookings->links() }}
+                            </div>
                         </div>
                     @else
                         <div class="rounded-2xl border border-dashed border-slate-300 px-6 py-10 text-center text-slate-500">

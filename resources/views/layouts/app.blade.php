@@ -11,24 +11,64 @@
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         @livewireStyles
+
+        <style>
+            @media print {
+                @page {
+                    size: A4;
+                    margin: 12mm;
+                }
+
+                html, body {
+                    background: #ffffff !important;
+                }
+
+                .app-chrome {
+                    display: none !important;
+                }
+
+                .app-content-wrap {
+                    padding-left: 0 !important;
+                }
+
+                .app-content-inner {
+                    padding-top: 0 !important;
+                }
+
+                .page-header-print-hide {
+                    display: none !important;
+                }
+
+                .print-main {
+                    padding: 0 !important;
+                    margin: 0 !important;
+                }
+
+                * {
+                    box-shadow: none !important;
+                }
+            }
+        </style>
     </head>
     <body class="bg-slate-100 font-sans text-slate-900 antialiased">
         <x-banner />
 
         <div class="min-h-screen bg-slate-100">
-            @livewire('navigation-menu')
+            <div class="app-chrome">
+                @livewire('navigation-menu')
+            </div>
 
-            <div class="lg:pl-64">
-                <div class="pt-16">
+            <div class="app-content-wrap lg:pl-64">
+                <div class="app-content-inner pt-16">
                     @isset($header)
-                        <header class="border-b border-slate-200 bg-white/85 backdrop-blur">
+                        <header class="page-header-print-hide border-b border-slate-200 bg-white/85 backdrop-blur">
                             <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
                                 {{ $header }}
                             </div>
                         </header>
                     @endisset
 
-                    <main>
+                    <main class="print-main">
                         {{ $slot }}
                     </main>
                 </div>

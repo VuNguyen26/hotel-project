@@ -5,10 +5,15 @@
                 Tạo đặt phòng
             </h2>
             <p class="mt-1 text-sm text-slate-500">
-                Chọn khách hàng, phòng và thời gian lưu trú để tạo booking.
+                Chọn khách hàng, khoảng ngày lưu trú và phòng còn trống để tạo booking.
             </p>
         </div>
     </x-slot>
+
+    @php
+        $selectedCheckIn = old('check_in_date', $checkInDate ?? '');
+        $selectedCheckOut = old('check_out_date', $checkOutDate ?? '');
+    @endphp
 
     <div class="py-8">
         <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
@@ -28,16 +33,61 @@
                         </div>
                     @endif
 
-                    @if($customers->count() == 0 || $rooms->count() == 0)
+                    @if($customers->count() == 0)
                         <div class="empty-state">
-                            Bạn cần có ít nhất 1 khách hàng và 1 phòng còn trống trước khi tạo đặt phòng.
+                            Bạn cần có ít nhất 1 khách hàng trước khi tạo đặt phòng.
                         </div>
 
                         <div class="mt-4 flex gap-3">
                             <a href="{{ route('customers.create') }}" class="btn-primary">Đi tạo khách hàng</a>
-                            <a href="{{ route('rooms.create') }}" class="btn-success">Đi tạo phòng</a>
                         </div>
                     @else
+                        <div class="mb-6 rounded-2xl border border-blue-100 bg-blue-50 p-4">
+                            <h4 class="text-sm font-semibold text-blue-900">Bước 1: Lọc phòng trống theo khoảng ngày</h4>
+
+                            <form action="{{ route('bookings.create') }}" method="GET" class="mt-3 grid grid-cols-1 gap-4 md:grid-cols-3">
+                                <div>
+                                    <label for="filter_check_in_date" class="form-label">Ngày nhận phòng</label>
+                                    <input
+                                        type="date"
+                                        name="check_in_date"
+                                        id="filter_check_in_date"
+                                        value="{{ $checkInDate }}"
+                                        class="form-input"
+                                    >
+                                </div>
+
+                                <div>
+                                    <label for="filter_check_out_date" class="form-label">Ngày trả phòng</label>
+                                    <input
+                                        type="date"
+                                        name="check_out_date"
+                                        id="filter_check_out_date"
+                                        value="{{ $checkOutDate }}"
+                                        class="form-input"
+                                    >
+                                </div>
+
+                                <div class="flex items-end gap-3">
+                                    <button type="submit" class="btn-primary">Lọc phòng trống</button>
+                                    <a href="{{ route('bookings.create') }}" class="btn-secondary">Đặt lại</a>
+                                </div>
+                            </form>
+
+                            @if($checkInDate && $checkOutDate)
+                                <p class="mt-3 text-sm text-blue-800">
+                                    Hệ thống đang hiển thị <strong>{{ $rooms->count() }}</strong> phòng không trùng lịch trong khoảng
+                                    <strong>{{ \Carbon\Carbon::parse($checkInDate)->format('d/m/Y') }}</strong>
+                                    đến
+                                    <strong>{{ \Carbon\Carbon::parse($checkOutDate)->format('d/m/Y') }}</strong>.
+                                </p>
+                            @else
+                                <p class="mt-3 text-sm text-amber-700">
+                                    Hãy chọn ngày nhận phòng và ngày trả phòng trước, sau đó bấm <strong>Lọc phòng trống</strong>.
+                                </p>
+                            @endif
+                        </div>
+
                         <form action="{{ route('bookings.store') }}" method="POST" class="space-y-5">
                             @csrf
 
@@ -53,36 +103,45 @@
                                 </select>
                             </div>
 
+                            <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+                                <div>
+                                    <label for="check_in_date" class="form-label">Ngày nhận phòng</label>
+                                    <input type="date" name="check_in_date" id="check_in_date" value="{{ $selectedCheckIn }}" class="form-input">
+                                </div>
+
+                                <div>
+                                    <label for="check_out_date" class="form-label">Ngày trả phòng</label>
+                                    <input type="date" name="check_out_date" id="check_out_date" value="{{ $selectedCheckOut }}" class="form-input">
+                                </div>
+                            </div>
+
                             <div>
                                 <label for="room_id" class="form-label">Phòng</label>
                                 <select name="room_id" id="room_id" class="form-select">
                                     <option value="">-- Chọn phòng --</option>
-                                    @foreach($rooms as $room)
+                                    @forelse($rooms as $room)
                                         <option value="{{ $room->id }}" {{ old('room_id') == $room->id ? 'selected' : '' }}>
                                             Phòng {{ $room->room_number }} - {{ $room->roomType->name }} - {{ number_format($room->roomType->price, 0, ',', '.') }} VNĐ/đêm
                                         </option>
-                                    @endforeach
+                                    @empty
+                                        <option value="" disabled>Không có phòng phù hợp trong khoảng ngày đã chọn</option>
+                                    @endforelse
                                 </select>
+                                <p class="mt-1 text-xs text-slate-500">
+                                    Hệ thống chỉ hiển thị các phòng không bị trùng lịch và không ở trạng thái bảo trì.
+                                </p>
                             </div>
 
-                            <div>
-                                <label for="check_in_date" class="form-label">Ngày nhận phòng</label>
-                                <input type="date" name="check_in_date" id="check_in_date" value="{{ old('check_in_date') }}" class="form-input">
-                            </div>
+                            <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+                                <div>
+                                    <label for="adults" class="form-label">Số người lớn</label>
+                                    <input type="number" name="adults" id="adults" value="{{ old('adults', 1) }}" class="form-input">
+                                </div>
 
-                            <div>
-                                <label for="check_out_date" class="form-label">Ngày trả phòng</label>
-                                <input type="date" name="check_out_date" id="check_out_date" value="{{ old('check_out_date') }}" class="form-input">
-                            </div>
-
-                            <div>
-                                <label for="adults" class="form-label">Số người lớn</label>
-                                <input type="number" name="adults" id="adults" value="{{ old('adults', 1) }}" class="form-input">
-                            </div>
-
-                            <div>
-                                <label for="children" class="form-label">Số trẻ em</label>
-                                <input type="number" name="children" id="children" value="{{ old('children', 0) }}" class="form-input">
+                                <div>
+                                    <label for="children" class="form-label">Số trẻ em</label>
+                                    <input type="number" name="children" id="children" value="{{ old('children', 0) }}" class="form-input">
+                                </div>
                             </div>
 
                             <div>

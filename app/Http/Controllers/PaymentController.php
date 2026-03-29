@@ -8,15 +8,56 @@ use Illuminate\Http\Request;
 
 class PaymentController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $payments = Payment::with(['booking.customer', 'booking.room'])
-            ->latest()
-            ->get();
+        $allowedSorts = [
+            'paid_at' => 'paid_at',
+            'amount' => 'amount',
+            'created_at' => 'created_at',
+        ];
 
-        $totalCollected = Payment::where('payment_status', 'paid')->sum('amount');
+        $sortBy = $request->get('sort_by', 'paid_at');
+        $sortBy = array_key_exists($sortBy, $allowedSorts) ? $sortBy : 'paid_at';
 
-        return view('payments.index', compact('payments', 'totalCollected'));
+        $sortDir = $request->get('sort_dir', 'desc') === 'asc' ? 'asc' : 'desc';
+
+        $perPage = (int) $request->get('per_page', 10);
+        $perPage = in_array($perPage, [10, 20, 50, 100], true) ? $perPage : 10;
+
+        $baseQuery = Payment::with(['booking.customer', 'booking.room'])
+            ->when($request->filled('keyword'), function ($query) use ($request) {
+                $keyword = trim($request->keyword);
+
+                $query->where(function ($q) use ($keyword) {
+                    $q->where('note', 'like', '%' . $keyword . '%')
+                    ->orWhereHas('booking.customer', function ($customerQuery) use ($keyword) {
+                        $customerQuery->where('full_name', 'like', '%' . $keyword . '%');
+                    })
+                    ->orWhereHas('booking.room', function ($roomQuery) use ($keyword) {
+                        $roomQuery->where('room_number', 'like', '%' . $keyword . '%');
+                    })
+                    ->orWhere('booking_id', $keyword);
+                });
+            })
+            ->when($request->filled('payment_method'), function ($query) use ($request) {
+                $query->where('payment_method', $request->payment_method);
+            })
+            ->when($request->filled('payment_status'), function ($query) use ($request) {
+                $query->where('payment_status', $request->payment_status);
+            });
+
+        $totalPayments = (clone $baseQuery)->count();
+        $totalCollected = (clone $baseQuery)
+            ->where('payment_status', 'paid')
+            ->sum('amount');
+
+        $payments = $baseQuery
+            ->orderBy($allowedSorts[$sortBy], $sortDir)
+            ->orderBy('id', 'desc')
+            ->paginate($perPage)
+            ->withQueryString();
+
+        return view('payments.index', compact('payments', 'totalCollected', 'totalPayments'));
     }
 
     public function create(Request $request)
@@ -83,7 +124,7 @@ class PaymentController extends Controller
             'note' => $request->note,
         ]);
 
-        return redirect()->route('payments.index')->with('success', 'Ghi nhận thanh toán thành công.');
+        return redirect()->route('bookings.show', $booking->id)->with('success', 'Ghi nhận thanh toán thành công.');
     }
 
     public function show(Payment $payment)
