@@ -179,6 +179,49 @@
                 </div>
             </div>
 
+                        {{-- Advanced report KPI --}}
+            <div class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+                <div class="rounded-[28px] border border-[#E6EEF5] bg-white p-6 shadow-sm">
+                    <div class="text-sm font-medium text-slate-500">Doanh thu tháng này</div>
+                    <div class="mt-4 text-3xl font-bold text-[#163A7D]">
+                        {{ number_format($revenueThisMonth, 0, ',', '.') }} VNĐ
+                    </div>
+                    <p class="mt-3 text-sm text-slate-500">
+                        Tổng tiền đã thu trong tháng hiện tại.
+                    </p>
+                </div>
+
+                <div class="rounded-[28px] border border-[#E6EEF5] bg-white p-6 shadow-sm">
+                    <div class="text-sm font-medium text-slate-500">Booking tháng này</div>
+                    <div class="mt-4 text-3xl font-bold text-[#163A7D]">
+                        {{ number_format($bookingsThisMonth, 0, ',', '.') }}
+                    </div>
+                    <p class="mt-3 text-sm text-slate-500">
+                        Số booking được tạo trong tháng hiện tại.
+                    </p>
+                </div>
+
+                <div class="rounded-[28px] border border-[#E6EEF5] bg-white p-6 shadow-sm">
+                    <div class="text-sm font-medium text-slate-500">Giá trị booking trung bình</div>
+                    <div class="mt-4 text-3xl font-bold text-[#163A7D]">
+                        {{ number_format($averageBookingValueThisMonth, 0, ',', '.') }} VNĐ
+                    </div>
+                    <p class="mt-3 text-sm text-slate-500">
+                        Trung bình tổng tiền mỗi booking trong tháng.
+                    </p>
+                </div>
+
+                <div class="rounded-[28px] border border-[#E6EEF5] bg-white p-6 shadow-sm">
+                    <div class="text-sm font-medium text-slate-500">Công nợ còn lại</div>
+                    <div class="mt-4 text-3xl font-bold text-[#D63C62]">
+                        {{ number_format($outstandingBalance, 0, ',', '.') }} VNĐ
+                    </div>
+                    <p class="mt-3 text-sm text-slate-500">
+                        Tổng số tiền chưa thu hết ở các booking chưa hủy.
+                    </p>
+                </div>
+            </div>
+
             {{-- Main charts row --}}
             <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
                 <div class="rounded-[28px] border border-[#E6EEF5] bg-white p-6 shadow-sm xl:col-span-2">
@@ -234,6 +277,220 @@
                     </div>
                     <div class="h-[380px]">
                         <canvas id="bookingStatusPolarChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+                        {{-- Advanced report charts --}}
+            <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
+                <div class="rounded-[28px] border border-[#E6EEF5] bg-white p-6 shadow-sm xl:col-span-2">
+                    <div class="mb-5">
+                        <h3 class="text-xl font-bold text-slate-900">Doanh thu 14 ngày gần nhất</h3>
+                        <p class="mt-1 text-sm text-slate-500">
+                            Kết hợp doanh thu đã thu và số booking tạo mới theo từng ngày.
+                        </p>
+                    </div>
+                    <div class="h-[360px]">
+                        <canvas id="dailyRevenueMixedChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="rounded-[28px] border border-[#E6EEF5] bg-white p-6 shadow-sm">
+                    <div class="mb-5">
+                        <h3 class="text-xl font-bold text-slate-900">Top loại phòng được đặt nhiều</h3>
+                        <p class="mt-1 text-sm text-slate-500">
+                            Xếp hạng theo số lượng booking không bị hủy.
+                        </p>
+                    </div>
+                    <div class="h-[360px]">
+                        <canvas id="topRoomTypeBarChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Advanced report tables --}}
+            <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
+                <div class="overflow-hidden rounded-[28px] border border-[#E6EEF5] bg-white shadow-sm xl:col-span-2">
+                    <div class="flex items-center justify-between border-b border-[#EEF3F8] px-6 py-6">
+                        <div>
+                            <h3 class="text-xl font-bold text-slate-900">5 booking còn nợ cao nhất</h3>
+                            <p class="mt-1 text-sm text-slate-500">
+                                Các booking cần ưu tiên theo dõi công nợ.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="px-6 py-6">
+                        @if($topOutstandingBookings->count() > 0)
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full">
+                                    <thead>
+                                        <tr class="bg-[#F7FAFD]">
+                                            <th class="border-b border-[#EAF0F5] px-4 py-4 text-left text-sm font-semibold text-slate-700">Booking</th>
+                                            <th class="border-b border-[#EAF0F5] px-4 py-4 text-left text-sm font-semibold text-slate-700">Khách hàng</th>
+                                            <th class="border-b border-[#EAF0F5] px-4 py-4 text-left text-sm font-semibold text-slate-700">Phòng</th>
+                                            <th class="border-b border-[#EAF0F5] px-4 py-4 text-left text-sm font-semibold text-slate-700">Tổng tiền</th>
+                                            <th class="border-b border-[#EAF0F5] px-4 py-4 text-left text-sm font-semibold text-slate-700">Đã thanh toán</th>
+                                            <th class="border-b border-[#EAF0F5] px-4 py-4 text-left text-sm font-semibold text-slate-700">Còn lại</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($topOutstandingBookings as $booking)
+                                            <tr class="hover:bg-[#FAFCFE]">
+                                                <td class="border-b border-[#EEF3F8] px-4 py-4 text-sm font-semibold text-slate-800">
+                                                    #{{ $booking->id }}
+                                                </td>
+                                                <td class="border-b border-[#EEF3F8] px-4 py-4 text-sm text-slate-700">
+                                                    {{ $booking->customer->full_name ?? '—' }}
+                                                </td>
+                                                <td class="border-b border-[#EEF3F8] px-4 py-4 text-sm text-slate-700">
+                                                    {{ $booking->room->room_number ?? '—' }}
+                                                </td>
+                                                <td class="border-b border-[#EEF3F8] px-4 py-4 text-sm font-semibold text-slate-800">
+                                                    {{ number_format($booking->total_price, 0, ',', '.') }} VNĐ
+                                                </td>
+                                                <td class="border-b border-[#EEF3F8] px-4 py-4 text-sm text-[#169F87] font-semibold">
+                                                    {{ number_format($booking->paid_amount_display, 0, ',', '.') }} VNĐ
+                                                </td>
+                                                <td class="border-b border-[#EEF3F8] px-4 py-4 text-sm text-[#D63C62] font-bold">
+                                                    {{ number_format($booking->remaining_amount, 0, ',', '.') }} VNĐ
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        @else
+                            <div class="rounded-2xl border border-dashed border-[#D7E3EE] px-6 py-12 text-center text-slate-500">
+                                Hiện chưa có booking nào còn công nợ.
+                            </div>
+                        @endif
+                    </div>
+                </div>
+
+                <div class="overflow-hidden rounded-[28px] border border-[#E6EEF5] bg-white shadow-sm">
+                    <div class="border-b border-[#EEF3F8] px-6 py-6">
+                        <h3 class="text-xl font-bold text-slate-900">Báo cáo theo loại phòng</h3>
+                        <p class="mt-1 text-sm text-slate-500">
+                            Thống kê loại phòng nổi bật theo lượt đặt và doanh thu.
+                        </p>
+                    </div>
+
+                    <div class="px-6 py-6">
+                        @if($topRoomTypes->count() > 0)
+                            <div class="space-y-4">
+                                @foreach($topRoomTypes as $roomType)
+                                    <div class="rounded-2xl border border-[#EEF3F8] p-4">
+                                        <div class="flex items-start justify-between gap-3">
+                                            <div>
+                                                <h4 class="text-sm font-bold text-slate-900">{{ $roomType->name }}</h4>
+                                                <p class="mt-1 text-xs text-slate-500">
+                                                    {{ $roomType->rooms_count }} phòng • Giá {{ number_format($roomType->price, 0, ',', '.') }} VNĐ
+                                                </p>
+                                            </div>
+
+                                            <span class="rounded-full bg-[#EEF4FF] px-3 py-1 text-xs font-semibold text-[#2F5FD7]">
+                                                {{ $roomType->bookings_count }} booking
+                                            </span>
+                                        </div>
+
+                                        <div class="mt-4 h-2 rounded-full bg-slate-100">
+                                            <div class="h-2 rounded-full bg-[#20D3B3]"
+                                                 style="width: {{ $topRoomTypes->max('bookings_count') > 0 ? ($roomType->bookings_count / $topRoomTypes->max('bookings_count')) * 100 : 0 }}%">
+                                            </div>
+                                        </div>
+
+                                        <div class="mt-3 text-sm font-semibold text-slate-700">
+                                            Doanh thu dự kiến: {{ number_format($roomType->revenue_total, 0, ',', '.') }} VNĐ
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @else
+                            <div class="rounded-2xl border border-dashed border-[#D7E3EE] px-6 py-12 text-center text-slate-500">
+                                Chưa có dữ liệu loại phòng để thống kê.
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+
+            {{-- Operation + recent payments --}}
+            <div class="grid grid-cols-1 gap-6 xl:grid-cols-2">
+                <div class="overflow-hidden rounded-[28px] border border-[#E6EEF5] bg-white shadow-sm">
+                    <div class="border-b border-[#EEF3F8] px-6 py-6">
+                        <h3 class="text-xl font-bold text-slate-900">Vận hành hôm nay</h3>
+                        <p class="mt-1 text-sm text-slate-500">
+                            Các chỉ số cần theo dõi ngay trong ngày.
+                        </p>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-4 px-6 py-6 sm:grid-cols-3">
+                        <div class="rounded-2xl border border-[#EEF3F8] bg-[#F8FBFE] p-5">
+                            <div class="text-sm font-medium text-slate-500">Check-in hôm nay</div>
+                            <div class="mt-4 text-3xl font-bold text-[#169F87]">{{ $todayCheckIns }}</div>
+                        </div>
+
+                        <div class="rounded-2xl border border-[#EEF3F8] bg-[#F8FBFE] p-5">
+                            <div class="text-sm font-medium text-slate-500">Check-out hôm nay</div>
+                            <div class="mt-4 text-3xl font-bold text-[#2F5FD7]">{{ $todayCheckOuts }}</div>
+                        </div>
+
+                        <div class="rounded-2xl border border-[#EEF3F8] bg-[#F8FBFE] p-5">
+                            <div class="text-sm font-medium text-slate-500">Booking còn nợ</div>
+                            <div class="mt-4 text-3xl font-bold text-[#D63C62]">{{ $unpaidBookingCount }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="overflow-hidden rounded-[28px] border border-[#E6EEF5] bg-white shadow-sm">
+                    <div class="border-b border-[#EEF3F8] px-6 py-6">
+                        <h3 class="text-xl font-bold text-slate-900">5 thanh toán mới nhất</h3>
+                        <p class="mt-1 text-sm text-slate-500">
+                            Theo dõi các giao dịch vừa được ghi nhận.
+                        </p>
+                    </div>
+
+                    <div class="px-6 py-6">
+                        @if($recentPayments->count() > 0)
+                            <div class="space-y-4">
+                                @foreach($recentPayments as $payment)
+                                    <div class="flex items-start justify-between gap-4 rounded-2xl border border-[#EEF3F8] p-4">
+                                        <div>
+                                            <div class="text-sm font-bold text-slate-900">
+                                                Booking #{{ $payment->booking->id ?? '—' }} -
+                                                {{ $payment->booking->customer->full_name ?? '—' }}
+                                            </div>
+                                            <div class="mt-1 text-sm text-slate-500">
+                                                Phòng {{ $payment->booking->room->room_number ?? '—' }} •
+                                                {{ optional($payment->paid_at)->format('d/m/Y H:i') }}
+                                            </div>
+                                        </div>
+
+                                        <div class="text-right">
+                                            <div class="text-sm font-bold text-[#169F87]">
+                                                {{ number_format($payment->amount, 0, ',', '.') }} VNĐ
+                                            </div>
+                                            <div class="mt-1 text-xs text-slate-500">
+                                                @if($payment->payment_method === 'cash')
+                                                    Tiền mặt
+                                                @elseif($payment->payment_method === 'transfer')
+                                                    Chuyển khoản
+                                                @elseif($payment->payment_method === 'card')
+                                                    Thẻ
+                                                @else
+                                                    —
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @else
+                            <div class="rounded-2xl border border-dashed border-[#D7E3EE] px-6 py-12 text-center text-slate-500">
+                                Chưa có giao dịch thanh toán nào.
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -342,6 +599,12 @@
 
             const bookingStatusLabels = @json($bookingStatusLabels);
             const bookingStatusData = @json($bookingStatusData);
+            const dailyRevenueLabels = @json($dailyRevenueLabels);
+            const dailyRevenueData = @json($dailyRevenueData);
+            const dailyBookingData = @json($dailyBookingData);
+
+            const topRoomTypeLabels = @json($topRoomTypeLabels);
+            const topRoomTypeBookingData = @json($topRoomTypeBookingData);
 
             const gridColor = '#EAF0F5';
             const labelColor = '#64748B';
@@ -614,6 +877,123 @@
                                 pointLabels: {
                                     color: labelColor,
                                     font: { size: 12, weight: '600' }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+                        const dailyRevenueMixedCtx = document.getElementById('dailyRevenueMixedChart');
+            if (dailyRevenueMixedCtx) {
+                new Chart(dailyRevenueMixedCtx, {
+                    data: {
+                        labels: dailyRevenueLabels,
+                        datasets: [
+                            {
+                                type: 'bar',
+                                label: 'Doanh thu',
+                                data: dailyRevenueData,
+                                backgroundColor: 'rgba(32, 211, 179, 0.65)',
+                                borderRadius: 10,
+                                yAxisID: 'y',
+                                maxBarThickness: 36
+                            },
+                            {
+                                type: 'line',
+                                label: 'Booking mới',
+                                data: dailyBookingData,
+                                borderColor: '#2F5FD7',
+                                backgroundColor: 'rgba(47, 95, 215, 0.12)',
+                                pointBackgroundColor: '#2F5FD7',
+                                pointBorderColor: '#fff',
+                                pointBorderWidth: 2,
+                                pointRadius: 4,
+                                tension: 0.4,
+                                yAxisID: 'y1'
+                            }
+                        ]
+                    },
+                    options: {
+                        maintainAspectRatio: false,
+                        interaction: {
+                            mode: 'index',
+                            intersect: false
+                        },
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: labelColor,
+                                    font: { weight: '600' }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: { display: false },
+                                ticks: { color: labelColor }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                position: 'left',
+                                grid: { color: gridColor },
+                                ticks: {
+                                    color: labelColor,
+                                    callback: function(value) {
+                                        return new Intl.NumberFormat('vi-VN').format(value);
+                                    }
+                                }
+                            },
+                            y1: {
+                                beginAtZero: true,
+                                position: 'right',
+                                grid: { drawOnChartArea: false },
+                                ticks: {
+                                    stepSize: 1,
+                                    color: labelColor
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            const topRoomTypeCtx = document.getElementById('topRoomTypeBarChart');
+            if (topRoomTypeCtx) {
+                new Chart(topRoomTypeCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: topRoomTypeLabels,
+                        datasets: [{
+                            label: 'Số booking',
+                            data: topRoomTypeBookingData,
+                            backgroundColor: ['#2F5FD7', '#20D3B3', '#7B57E8', '#F08A24', '#F0526D'],
+                            borderRadius: 12,
+                            borderSkipped: false
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                grid: { color: gridColor },
+                                ticks: {
+                                    color: labelColor,
+                                    stepSize: 1
+                                }
+                            },
+                            y: {
+                                grid: { display: false },
+                                ticks: {
+                                    color: labelColor,
+                                    font: { weight: '600' }
                                 }
                             }
                         }

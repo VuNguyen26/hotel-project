@@ -2,16 +2,22 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\RoomType;
-use App\Models\Room;
-use App\Models\Customer;
 use App\Models\Booking;
+use App\Models\Customer;
 use App\Models\Payment;
+use App\Models\Room;
+use App\Models\RoomType;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
     public function index()
     {
+        $today = Carbon::today();
+        $monthStart = now()->copy()->startOfMonth();
+        $monthEnd = now()->copy()->endOfMonth();
+
         $totalRoomTypes = RoomType::count();
         $totalRooms = Room::count();
         $totalCustomers = Customer::count();
@@ -24,6 +30,7 @@ class DashboardController extends Controller
 
         $totalCollected = (float) Payment::where('payment_status', 'paid')->sum('amount');
         $paidTransactions = Payment::where('payment_status', 'paid')->count();
+
         $occupancyRate = $totalRooms > 0
             ? round((($bookedRooms + $occupiedRooms) / $totalRooms) * 100)
             : 0;
@@ -106,6 +113,106 @@ class DashboardController extends Controller
             Booking::where('status', 'cancelled')->count(),
         ];
 
+        // ===== Thống kê nâng cao =====
+        $revenueThisMonth = (float) Payment::where('payment_status', 'paid')
+            ->whereNotNull('paid_at')
+            ->whereBetween('paid_at', [$monthStart, $monthEnd])
+            ->sum('amount');
+
+        $bookingsThisMonth = Booking::whereBetween('created_at', [$monthStart, $monthEnd])->count();
+
+        $averageBookingValueThisMonth = (float) Booking::whereBetween('created_at', [$monthStart, $monthEnd])
+            ->avg('total_price');
+
+        $todayCheckIns = Booking::whereDate('check_in_date', $today)
+            ->whereIn('status', ['confirmed', 'checked_in'])
+            ->count();
+
+        $todayCheckOuts = Booking::whereDate('check_out_date', $today)
+            ->whereIn('status', ['checked_in', 'checked_out'])
+            ->count();
+
+        $bookingsWithPaidAmount = Booking::with(['customer', 'room.roomType'])
+            ->withSum([
+                'payments as paid_amount' => function ($query) {
+                    $query->where('payment_status', 'paid');
+                }
+            ], 'amount')
+            ->get();
+
+        $outstandingBalance = (float) $bookingsWithPaidAmount
+            ->where('status', '!=', 'cancelled')
+            ->sum(function ($booking) {
+                return max((float) $booking->total_price - (float) ($booking->paid_amount ?? 0), 0);
+            });
+
+        $unpaidBookingCount = $bookingsWithPaidAmount
+            ->filter(function ($booking) {
+                $remaining = max((float) $booking->total_price - (float) ($booking->paid_amount ?? 0), 0);
+                return $booking->status !== 'cancelled' && $remaining > 0;
+            })
+            ->count();
+
+        $topOutstandingBookings = $bookingsWithPaidAmount
+            ->map(function ($booking) {
+                $booking->paid_amount_display = (float) ($booking->paid_amount ?? 0);
+                $booking->remaining_amount = max((float) $booking->total_price - $booking->paid_amount_display, 0);
+                return $booking;
+            })
+            ->filter(function ($booking) {
+                return $booking->status !== 'cancelled' && $booking->remaining_amount > 0;
+            })
+            ->sortByDesc('remaining_amount')
+            ->take(5)
+            ->values();
+
+        $topRoomTypes = RoomType::query()
+            ->leftJoin('rooms', 'room_types.id', '=', 'rooms.room_type_id')
+            ->leftJoin('bookings', function ($join) {
+                $join->on('rooms.id', '=', 'bookings.room_id')
+                    ->where('bookings.status', '!=', 'cancelled');
+            })
+            ->select(
+                'room_types.id',
+                'room_types.name',
+                'room_types.price',
+                DB::raw('COUNT(DISTINCT rooms.id) as rooms_count'),
+                DB::raw('COUNT(bookings.id) as bookings_count'),
+                DB::raw('COALESCE(SUM(bookings.total_price), 0) as revenue_total')
+            )
+            ->groupBy('room_types.id', 'room_types.name', 'room_types.price')
+            ->orderByDesc('bookings_count')
+            ->orderByDesc('revenue_total')
+            ->limit(5)
+            ->get();
+
+        $topRoomTypeLabels = $topRoomTypes->pluck('name')->values();
+        $topRoomTypeBookingData = $topRoomTypes->pluck('bookings_count')->map(fn ($value) => (int) $value)->values();
+
+        $recentPayments = Payment::with(['booking.customer', 'booking.room'])
+            ->where('payment_status', 'paid')
+            ->latest('paid_at')
+            ->take(5)
+            ->get();
+
+        $last14Days = collect(range(13, 0))->map(function ($i) use ($today) {
+            return $today->copy()->subDays($i);
+        });
+
+        $dailyRevenueLabels = $last14Days->map(function ($day) {
+            return $day->format('d/m');
+        })->values();
+
+        $dailyRevenueData = $last14Days->map(function ($day) {
+            return (float) Payment::where('payment_status', 'paid')
+                ->whereDate('paid_at', $day)
+                ->sum('amount');
+        })->values();
+
+        $dailyBookingData = $last14Days->map(function ($day) {
+            return Booking::whereDate('created_at', $day)->count();
+        })->values();
+
         return view('dashboard', compact(
             'totalRoomTypes',
             'totalRooms',
@@ -131,7 +238,23 @@ class DashboardController extends Controller
             'paymentMethodLabels',
             'paymentMethodData',
             'bookingStatusLabels',
-            'bookingStatusData'
+            'bookingStatusData',
+
+            'revenueThisMonth',
+            'bookingsThisMonth',
+            'averageBookingValueThisMonth',
+            'todayCheckIns',
+            'todayCheckOuts',
+            'outstandingBalance',
+            'unpaidBookingCount',
+            'topOutstandingBookings',
+            'topRoomTypes',
+            'topRoomTypeLabels',
+            'topRoomTypeBookingData',
+            'recentPayments',
+            'dailyRevenueLabels',
+            'dailyRevenueData',
+            'dailyBookingData'
         ));
     }
 }
