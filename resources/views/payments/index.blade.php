@@ -131,10 +131,10 @@
                                         <th class="border-b border-slate-200 px-4 py-3 text-left text-sm font-semibold text-slate-700">Phòng</th>
                                         <th class="border-b border-slate-200 px-4 py-3 text-left text-sm font-semibold text-slate-700">Số tiền</th>
                                         <th class="border-b border-slate-200 px-4 py-3 text-left text-sm font-semibold text-slate-700">Phương thức</th>
-                                        <th class="border-b border-slate-200 px-4 py-3 text-left text-sm font-semibold text-slate-700">Trạng thái</th>
+                                        <th class="whitespace-nowrap border-b border-slate-200 px-4 py-3 text-left text-sm font-semibold text-slate-700">Trạng thái</th>
                                         <th class="border-b border-slate-200 px-4 py-3 text-left text-sm font-semibold text-slate-700">Thời gian thanh toán</th>
                                         <th class="border-b border-slate-200 px-4 py-3 text-left text-sm font-semibold text-slate-700">Ghi chú</th>
-                                        <th class="border-b border-slate-200 px-4 py-3 text-left text-sm font-semibold text-slate-700">Thao tác</th>
+                                        <th class="whitespace-nowrap border-b border-slate-200 px-4 py-3 text-left text-sm font-semibold text-slate-700">Thao tác</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -158,13 +158,13 @@
                                                     —
                                                 @endif
                                             </td>
-                                            <td class="border-b border-slate-100 px-4 py-4 text-sm">
+                                            <td class="border-b border-slate-100 px-4 py-4 text-sm whitespace-nowrap">
                                                 @if($payment->payment_status === 'paid')
-                                                    <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
+                                                    <span class="inline-flex whitespace-nowrap rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
                                                         Đã thanh toán
                                                     </span>
                                                 @elseif($payment->payment_status === 'refunded')
-                                                    <span class="rounded-full bg-rose-100 px-3 py-1 text-xs font-semibold text-rose-700">
+                                                    <span class="inline-flex whitespace-nowrap rounded-full bg-rose-100 px-3 py-1 text-xs font-semibold text-rose-700">
                                                         Hoàn tiền
                                                     </span>
                                                 @endif
@@ -175,10 +175,10 @@
                                             <td class="border-b border-slate-100 px-4 py-4 text-sm text-slate-700">
                                                 {{ $payment->note ?: '—' }}
                                             </td>
-                                            <td class="border-b border-slate-100 px-4 py-4 text-sm">
+                                            <td class="border-b border-slate-100 px-4 py-4 text-sm whitespace-nowrap">
                                                 @if (Route::has('bookings.show'))
                                                     <a href="{{ route('bookings.show', $payment->booking->id) }}"
-                                                       class="rounded-lg bg-slate-700 px-3 py-2 text-xs font-semibold text-white hover:bg-slate-800">
+                                                    class="inline-flex items-center whitespace-nowrap rounded-lg bg-slate-700 px-3 py-2 text-xs font-semibold text-white hover:bg-slate-800">
                                                         Xem phiếu
                                                     </a>
                                                 @else
