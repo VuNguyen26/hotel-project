@@ -1,16 +1,22 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\PublicRoomController;
 use App\Http\Controllers\RoomTypeController;
 use App\Http\Controllers\RoomController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\PublicBookingController;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/our-rooms', [PublicRoomController::class, 'index'])->name('public.rooms.index');
+Route::get('/our-rooms/{room}', [PublicRoomController::class, 'show'])->name('public.rooms.show');
+Route::get('/our-rooms/{room}/book', [PublicBookingController::class, 'create'])->name('public.bookings.create');
+Route::post('/our-rooms/{room}/book', [PublicBookingController::class, 'store'])->name('public.bookings.store');
+Route::get('/booking-success', [PublicBookingController::class, 'success'])->name('public.bookings.success');
 
 Route::middleware([
     'auth:sanctum',
