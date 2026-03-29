@@ -48,6 +48,11 @@
                     <span class="mr-3 text-base">📅</span>
                     Đặt phòng
                 </a>
+
+                <a href="{{ route('payments.index') }}"
+                    class="block rounded-2xl px-4 py-3 text-sm font-medium transition {{ request()->routeIs('payments.*') ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-900 hover:text-white' }}">
+                    Thanh toán
+                </a>
             </div>
 
             <div class="mt-8 rounded-3xl border border-slate-800 bg-slate-900/80 p-5">
@@ -201,8 +206,15 @@
                    class="block rounded-2xl px-4 py-3 text-sm font-medium transition {{ request()->routeIs('bookings.*') ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-900 hover:text-white' }}">
                     Đặt phòng
                 </a>
-            </div>
 
+                <a href="{{ route('payments.index') }}"
+                class="flex items-center rounded-2xl px-4 py-3 text-sm font-medium transition {{ request()->routeIs('payments.*') ? 'bg-blue-600 text-white shadow-lg shadow-blue-950/30' : 'text-slate-300 hover:bg-slate-900 hover:text-white' }}">
+                    <span class="mr-3 text-base">💳</span>
+                    Thanh toán
+                </a>
+
+            </div>
+            
             <div class="mt-8 border-t border-slate-800 pt-5">
                 <div class="text-sm font-semibold text-white">{{ Auth::user()->name }}</div>
                 <div class="text-xs text-slate-400">{{ Auth::user()->email }}</div>

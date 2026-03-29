@@ -12,7 +12,7 @@ class BookingController extends Controller
 {
     public function index()
     {
-        $bookings = Booking::with(['customer', 'room.roomType'])->latest()->get();
+        $bookings = Booking::with(['customer', 'room.roomType', 'payments'])->latest()->get();
         return view('bookings.index', compact('bookings'));
     }
 
@@ -60,7 +60,7 @@ class BookingController extends Controller
         $nights = $checkIn->diffInDays($checkOut);
         $totalPrice = $nights * $room->roomType->price;
 
-        Booking::create([
+        $booking = Booking::create([
             'customer_id' => $request->customer_id,
             'room_id' => $request->room_id,
             'check_in_date' => $request->check_in_date,
@@ -71,11 +71,7 @@ class BookingController extends Controller
             'status' => $request->status,
         ]);
 
-        if (in_array($request->status, ['confirmed', 'checked_in'])) {
-            $room->update([
-                'status' => $request->status === 'checked_in' ? 'occupied' : 'booked',
-            ]);
-        }
+        $this->syncRoomStatus($room, $booking->status);
 
         return redirect()->route('bookings.index')->with('success', 'Tạo đặt phòng thành công.');
     }
@@ -127,6 +123,8 @@ class BookingController extends Controller
         $nights = $checkIn->diffInDays($checkOut);
         $totalPrice = $nights * $newRoom->roomType->price;
 
+        $oldRoomId = $booking->room_id;
+
         $booking->update([
             'customer_id' => $request->customer_id,
             'room_id' => $request->room_id,
@@ -138,19 +136,32 @@ class BookingController extends Controller
             'status' => $request->status,
         ]);
 
-        if ($booking->room_id != $oldRoom->id) {
+        if ($oldRoomId != $newRoom->id) {
             $oldRoom->update(['status' => 'available']);
         }
 
-        if ($request->status === 'confirmed') {
-            $newRoom->update(['status' => 'booked']);
-        } elseif ($request->status === 'checked_in') {
-            $newRoom->update(['status' => 'occupied']);
-        } elseif (in_array($request->status, ['checked_out', 'cancelled', 'pending'])) {
-            $newRoom->update(['status' => 'available']);
-        }
+        $this->syncRoomStatus($newRoom, $booking->status);
 
         return redirect()->route('bookings.index')->with('success', 'Cập nhật đặt phòng thành công.');
+    }
+
+    public function updateStatus(Request $request, Booking $booking)
+    {
+        $request->validate([
+            'status' => 'required|in:pending,confirmed,checked_in,checked_out,cancelled',
+        ]);
+
+        $booking->update([
+            'status' => $request->status,
+        ]);
+
+        $room = Room::find($booking->room_id);
+
+        if ($room) {
+            $this->syncRoomStatus($room, $booking->status);
+        }
+
+        return redirect()->route('bookings.index')->with('success', 'Cập nhật trạng thái booking thành công.');
     }
 
     public function destroy(Booking $booking)
@@ -164,5 +175,16 @@ class BookingController extends Controller
         $booking->delete();
 
         return redirect()->route('bookings.index')->with('success', 'Xóa đặt phòng thành công.');
+    }
+
+    private function syncRoomStatus(Room $room, string $bookingStatus): void
+    {
+        if ($bookingStatus === 'confirmed') {
+            $room->update(['status' => 'booked']);
+        } elseif ($bookingStatus === 'checked_in') {
+            $room->update(['status' => 'occupied']);
+        } elseif (in_array($bookingStatus, ['checked_out', 'cancelled', 'pending'])) {
+            $room->update(['status' => 'available']);
+        }
     }
 }
