@@ -1,0 +1,71 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Room;
+use App\Models\RoomType;
+use Illuminate\Http\Request;
+
+class RoomController extends Controller
+{
+    public function index()
+    {
+        $rooms = Room::with('roomType')->latest()->get();
+        return view('rooms.index', compact('rooms'));
+    }
+
+    public function create()
+    {
+        $roomTypes = RoomType::orderBy('name')->get();
+        return view('rooms.create', compact('roomTypes'));
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'room_number' => 'required|string|max:50|unique:rooms,room_number',
+            'room_type_id' => 'required|exists:room_types,id',
+            'floor' => 'nullable|integer|min:1',
+            'status' => 'required|in:available,booked,occupied,maintenance',
+            'note' => 'nullable|string',
+        ], [
+            'room_number.required' => 'Vui lòng nhập số phòng.',
+            'room_number.unique' => 'Số phòng đã tồn tại.',
+            'room_type_id.required' => 'Vui lòng chọn loại phòng.',
+            'room_type_id.exists' => 'Loại phòng không hợp lệ.',
+            'floor.integer' => 'Tầng phải là số nguyên.',
+            'floor.min' => 'Tầng phải lớn hơn hoặc bằng 1.',
+            'status.required' => 'Vui lòng chọn trạng thái phòng.',
+        ]);
+
+        Room::create([
+            'room_number' => $request->room_number,
+            'room_type_id' => $request->room_type_id,
+            'floor' => $request->floor,
+            'status' => $request->status,
+            'note' => $request->note,
+        ]);
+
+        return redirect()->route('rooms.index')->with('success', 'Thêm phòng thành công.');
+    }
+
+    public function show(Room $room)
+    {
+        //
+    }
+
+    public function edit(Room $room)
+    {
+        //
+    }
+
+    public function update(Request $request, Room $room)
+    {
+        //
+    }
+
+    public function destroy(Room $room)
+    {
+        //
+    }
+}
