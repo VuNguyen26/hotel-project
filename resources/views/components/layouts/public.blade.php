@@ -20,13 +20,18 @@
 
                 <nav class="hidden items-center gap-6 md:flex">
                     <a href="{{ route('home') }}"
-                       class="text-sm font-semibold text-slate-700 transition hover:text-sky-600">
+                    class="text-sm font-semibold text-slate-700 transition hover:text-sky-600">
                         Trang chủ
                     </a>
 
                     <a href="{{ route('public.rooms.index') }}"
-                       class="text-sm font-semibold text-slate-700 transition hover:text-sky-600">
+                    class="text-sm font-semibold text-slate-700 transition hover:text-sky-600">
                         Phòng
+                    </a>
+
+                    <a href="{{ route('public.bookings.lookup') }}"
+                    class="text-sm font-semibold text-slate-700 transition hover:text-sky-600">
+                        Tra cứu booking
                     </a>
                 </nav>
             </div>

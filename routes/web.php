@@ -17,7 +17,8 @@ Route::get('/our-rooms/{room}', [PublicRoomController::class, 'show'])->name('pu
 Route::get('/our-rooms/{room}/book', [PublicBookingController::class, 'create'])->name('public.bookings.create');
 Route::post('/our-rooms/{room}/book', [PublicBookingController::class, 'store'])->name('public.bookings.store');
 Route::get('/booking-success', [PublicBookingController::class, 'success'])->name('public.bookings.success');
-
+Route::get('/booking-lookup', [PublicBookingController::class, 'lookupForm'])->name('public.bookings.lookup');
+Route::post('/booking-lookup', [PublicBookingController::class, 'lookupResult'])->name('public.bookings.lookup.submit');
 Route::middleware([
     'auth:sanctum',
     config('jetstream.auth_session'),

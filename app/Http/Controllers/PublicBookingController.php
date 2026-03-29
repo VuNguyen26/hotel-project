@@ -110,7 +110,7 @@ class PublicBookingController extends Controller
 
         $summary = [
             'booking_id' => $booking->id,
-            'booking_code' => 'BK-' . $booking->created_at->format('Ymd') . '-' . str_pad($booking->id, 6, '0', STR_PAD_LEFT),
+            'booking_code' => $this->makeBookingCode($booking),
             'customer_name' => $customer->full_name,
             'customer_phone' => $customer->phone,
             'customer_email' => $customer->email,
@@ -139,6 +139,47 @@ class PublicBookingController extends Controller
         $summary = session('booking_success');
 
         return view('user.bookings.success', compact('summary'));
+    }
+
+    public function lookupForm()
+    {
+        return view('user.bookings.lookup');
+    }
+
+    public function lookupResult(Request $request)
+    {
+        $validated = $request->validate([
+            'booking_code' => 'required|string|max:50',
+            'phone' => 'required_without:email|nullable|string|max:20',
+            'email' => 'required_without:phone|nullable|email|max:255',
+        ], [
+            'booking_code.required' => 'Vui lòng nhập mã booking.',
+            'phone.required_without' => 'Vui lòng nhập số điện thoại hoặc email.',
+            'email.required_without' => 'Vui lòng nhập email hoặc số điện thoại.',
+            'email.email' => 'Email không đúng định dạng.',
+        ]);
+
+        $booking = $this->findBookingForLookup(
+            $validated['booking_code'],
+            $validated['email'] ?? null,
+            $validated['phone'] ?? null
+        );
+
+        if (!$booking) {
+            return back()->withInput()->withErrors([
+                'lookup' => 'Không tìm thấy booking phù hợp với thông tin bạn cung cấp.',
+            ]);
+        }
+
+        $paidAmount = (float) $booking->payments->sum('amount');
+        $remainingAmount = max(((float) $booking->total_price) - $paidAmount, 0);
+
+        return view('user.bookings.result', [
+            'booking' => $booking,
+            'bookingCode' => $this->makeBookingCode($booking),
+            'paidAmount' => $paidAmount,
+            'remainingAmount' => $remainingAmount,
+        ]);
     }
 
     private function findOrCreateCustomer(Request $request): Customer
@@ -241,5 +282,69 @@ class PublicBookingController extends Controller
         $room->update([
             'status' => $hasReservedBooking ? 'booked' : 'available',
         ]);
+    }
+
+    private function makeBookingCode(Booking $booking): string
+    {
+        return 'BK-' . $booking->created_at->format('Ymd') . '-' . str_pad($booking->id, 6, '0', STR_PAD_LEFT);
+    }
+
+    private function findBookingForLookup(string $bookingCode, ?string $email, ?string $phone): ?Booking
+    {
+        $bookingId = $this->extractBookingIdFromCode($bookingCode);
+
+        if (!$bookingId) {
+            return null;
+        }
+
+        $booking = Booking::with(['customer', 'room.roomType', 'payments'])
+            ->find($bookingId);
+
+        if (!$booking || !$booking->customer) {
+            return null;
+        }
+
+        if (!$this->matchesLookupContact($booking, $email, $phone)) {
+            return null;
+        }
+
+        return $booking;
+    }
+
+    private function extractBookingIdFromCode(string $bookingCode): ?int
+    {
+        $bookingCode = strtoupper(trim($bookingCode));
+
+        if (preg_match('/^BK-\d{8}-(\d{6,})$/', $bookingCode, $matches)) {
+            return (int) ltrim($matches[1], '0') ?: 0;
+        }
+
+        if (ctype_digit($bookingCode)) {
+            return (int) $bookingCode;
+        }
+
+        return null;
+    }
+
+    private function matchesLookupContact(Booking $booking, ?string $email, ?string $phone): bool
+    {
+        $customer = $booking->customer;
+
+        $matches = true;
+
+        if ($email) {
+            $matches = $matches && strtolower(trim($customer->email ?? '')) === strtolower(trim($email));
+        }
+
+        if ($phone) {
+            $matches = $matches && $this->normalizePhone($customer->phone ?? '') === $this->normalizePhone($phone);
+        }
+
+        return $matches;
+    }
+
+    private function normalizePhone(string $phone): string
+    {
+        return preg_replace('/\D+/', '', $phone);
     }
 }

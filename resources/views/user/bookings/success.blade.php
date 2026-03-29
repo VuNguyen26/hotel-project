@@ -111,6 +111,13 @@
 
                 <div class="mt-8 flex flex-wrap gap-4">
                     <a
+                        href="{{ route('public.bookings.lookup') }}"
+                        class="rounded-2xl bg-sky-500 px-6 py-3 text-sm font-semibold text-white transition hover:bg-sky-600"
+                    >
+                        Tra cứu booking
+                    </a>
+
+                    <a
                         href="{{ route('home') }}"
                         class="rounded-2xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
                     >
