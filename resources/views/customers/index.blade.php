@@ -17,6 +17,11 @@
                     {{ session('success') }}
                 </div>
             @endif
+            @if(session('error'))
+                <div class="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-rose-700">
+                    {{ session('error') }}
+                </div>
+            @endif
 
             <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
                 <form action="{{ route('customers.index') }}" method="GET" class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">

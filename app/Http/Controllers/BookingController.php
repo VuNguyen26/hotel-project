@@ -255,6 +255,12 @@ class BookingController extends Controller
 
         $room = Room::find($booking->room_id);
 
+        $booking->delete();
+
+        if ($room) {
+            $room->update(['status' => 'available']);
+        }
+
         if ($room) {
             $this->refreshRoomStatus($room);
         }
@@ -264,6 +270,12 @@ class BookingController extends Controller
 
     public function destroy(Booking $booking)
     {
+        if ($booking->payments()->exists()) {
+            return redirect()
+                ->route('bookings.index')
+                ->with('error', 'Không thể xóa booking này vì đã có thanh toán phát sinh. Hãy giữ lại để đảm bảo lịch sử công nợ.');
+        }
+
         $room = Room::find($booking->room_id);
 
         $booking->delete();

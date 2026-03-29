@@ -107,6 +107,14 @@ class CustomerController extends Controller
 
     public function destroy(Customer $customer)
     {
+        $bookingCount = $customer->bookings()->count();
+
+        if ($bookingCount > 0) {
+            return redirect()
+                ->route('customers.index')
+                ->with('error', 'Không thể xóa khách hàng này vì đã phát sinh ' . $bookingCount . ' booking.');
+        }
+
         $customer->delete();
 
         return redirect()->route('customers.index')->with('success', 'Xóa khách hàng thành công.');

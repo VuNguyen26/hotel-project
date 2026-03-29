@@ -82,6 +82,14 @@ class RoomTypeController extends Controller
 
     public function destroy(RoomType $roomType)
     {
+        $roomCount = $roomType->rooms()->count();
+
+        if ($roomCount > 0) {
+            return redirect()
+                ->route('room-types.index')
+                ->with('error', 'Không thể xóa loại phòng này vì đang có ' . $roomCount . ' phòng thuộc loại này.');
+        }
+
         $roomType->delete();
 
         return redirect()->route('room-types.index')->with('success', 'Xóa loại phòng thành công.');

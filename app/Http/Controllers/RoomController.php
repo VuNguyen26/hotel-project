@@ -126,6 +126,14 @@ class RoomController extends Controller
 
     public function destroy(Room $room)
     {
+        $bookingCount = $room->bookings()->count();
+
+        if ($bookingCount > 0) {
+            return redirect()
+                ->route('rooms.index')
+                ->with('error', 'Không thể xóa phòng ' . $room->room_number . ' vì đã phát sinh ' . $bookingCount . ' booking.');
+        }
+
         $room->delete();
 
         return redirect()->route('rooms.index')->with('success', 'Xóa phòng thành công.');
