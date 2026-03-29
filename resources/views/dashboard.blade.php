@@ -10,27 +10,16 @@
                 </p>
             </div>
 
-            <div class="flex flex-wrap gap-3">
-                <a href="{{ route('room-types.create') }}"
-                   class="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50">
-                    + Loại phòng
-                </a>
-
-                <a href="{{ route('rooms.create') }}"
-                   class="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50">
-                    + Phòng
-                </a>
-
-                <a href="{{ route('customers.create') }}"
-                   class="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50">
-                    + Khách hàng
-                </a>
-
-                <a href="{{ route('bookings.create') }}"
-                   class="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700">
-                    + Tạo booking
-                </a>
-            </div>
+            <x-slot name="header">
+                <div>
+                    <h2 class="text-2xl font-bold tracking-tight text-slate-900">
+                        Dashboard quản lý khách sạn
+                    </h2>
+                    <p class="mt-1 text-sm text-slate-500">
+                        Theo dõi nhanh tình hình phòng, khách hàng và booking trong hệ thống.
+                    </p>
+                </div>
+            </x-slot>
         </div>
     </x-slot>
 
