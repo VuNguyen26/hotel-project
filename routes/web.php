@@ -23,8 +23,10 @@ Route::middleware([
     Route::resource('rooms', RoomController::class);
     Route::resource('customers', CustomerController::class);
 
+    Route::get('/bookings/export/excel', [BookingController::class, 'exportExcel'])->name('bookings.export-excel');
     Route::patch('/bookings/{booking}/status', [BookingController::class, 'updateStatus'])->name('bookings.update-status');
     Route::resource('bookings', BookingController::class);
 
+    Route::get('/payments/export/pdf', [PaymentController::class, 'exportPdf'])->name('payments.export-pdf');
     Route::resource('payments', PaymentController::class)->only(['index', 'create', 'store']);
 });

@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\BookingsExport;
 use App\Models\Booking;
 use App\Models\Customer;
 use App\Models\Room;
-use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class BookingController extends Controller
 {
@@ -27,41 +29,43 @@ class BookingController extends Controller
         $perPage = (int) $request->get('per_page', 10);
         $perPage = in_array($perPage, [10, 20, 50, 100], true) ? $perPage : 10;
 
-        $bookings = Booking::with(['customer', 'room.roomType'])
-            ->withSum([
-                'payments as paid_amount' => function ($query) {
-                    $query->where('payment_status', 'paid');
-                }
-            ], 'amount')
-            ->when($request->filled('keyword'), function ($query) use ($request) {
-                $keyword = trim($request->keyword);
-
-                $query->where(function ($q) use ($keyword) {
-                    $q->whereHas('customer', function ($customerQuery) use ($keyword) {
-                        $customerQuery->where('full_name', 'like', '%' . $keyword . '%');
-                    })->orWhereHas('room', function ($roomQuery) use ($keyword) {
-                        $roomQuery->where('room_number', 'like', '%' . $keyword . '%');
-                    });
-                });
-            })
-            ->when($request->filled('status'), function ($query) use ($request) {
-                $query->where('status', $request->status);
-            })
-            ->when($request->filled('payment_filter'), function ($query) use ($request) {
-                if ($request->payment_filter === 'unpaid') {
-                    $query->havingRaw('COALESCE(paid_amount, 0) = 0');
-                } elseif ($request->payment_filter === 'partial') {
-                    $query->havingRaw('COALESCE(paid_amount, 0) > 0 AND COALESCE(paid_amount, 0) < total_price');
-                } elseif ($request->payment_filter === 'paid') {
-                    $query->havingRaw('total_price > 0 AND COALESCE(paid_amount, 0) >= total_price');
-                }
-            })
+        $bookings = $this->buildBookingsFilterQuery($request)
             ->orderBy($allowedSorts[$sortBy], $sortDir)
             ->orderBy('id', 'desc')
             ->paginate($perPage)
             ->withQueryString();
 
         return view('bookings.index', compact('bookings'));
+    }
+
+    public function exportExcel(Request $request)
+    {
+        $allowedSorts = [
+            'created_at' => 'created_at',
+            'check_in_date' => 'check_in_date',
+            'check_out_date' => 'check_out_date',
+            'total_price' => 'total_price',
+        ];
+
+        $sortBy = $request->get('sort_by', 'created_at');
+        $sortBy = array_key_exists($sortBy, $allowedSorts) ? $allowedSorts[$sortBy] : 'created_at';
+
+        $sortDir = $request->get('sort_dir', 'desc') === 'asc' ? 'asc' : 'desc';
+
+        $bookings = $this->buildBookingsFilterQuery($request)
+            ->orderBy($sortBy, $sortDir)
+            ->orderBy('id', 'desc')
+            ->get()
+            ->map(function ($booking) {
+                $paidAmount = (float) ($booking->paid_amount ?? 0);
+                $booking->paid_amount_display = $paidAmount;
+                $booking->remaining_amount = max((float) $booking->total_price - $paidAmount, 0);
+                return $booking;
+            });
+
+        $fileName = 'bookings-report-' . now()->format('Ymd_His') . '.xlsx';
+
+        return Excel::download(new BookingsExport($bookings), $fileName);
     }
 
     public function create(Request $request)
@@ -243,10 +247,12 @@ class BookingController extends Controller
         ]);
 
         if (
-            in_array($request->status, ['pending', 'confirmed', 'checked_in'])
+            in_array($request->status, ['pending', 'confirmed', 'checked_in'], true)
             && $this->hasBookingConflict($booking->room_id, $booking->check_in_date, $booking->check_out_date, $booking->id)
         ) {
-            return redirect()->route('bookings.index')->with('error', 'Booking này đang bị trùng lịch với booking khác, không thể chuyển sang trạng thái giữ phòng.');
+            return redirect()
+                ->route('bookings.index')
+                ->with('error', 'Booking này đang bị trùng lịch với booking khác, không thể chuyển sang trạng thái giữ phòng.');
         }
 
         $booking->update([
@@ -254,12 +260,6 @@ class BookingController extends Controller
         ]);
 
         $room = Room::find($booking->room_id);
-
-        $booking->delete();
-
-        if ($room) {
-            $room->update(['status' => 'available']);
-        }
 
         if ($room) {
             $this->refreshRoomStatus($room);
@@ -285,6 +285,39 @@ class BookingController extends Controller
         }
 
         return redirect()->route('bookings.index')->with('success', 'Xóa đặt phòng thành công.');
+    }
+
+    private function buildBookingsFilterQuery(Request $request)
+    {
+        return Booking::with(['customer', 'room.roomType'])
+            ->withSum([
+                'payments as paid_amount' => function ($query) {
+                    $query->where('payment_status', 'paid');
+                }
+            ], 'amount')
+            ->when($request->filled('keyword'), function ($query) use ($request) {
+                $keyword = trim($request->keyword);
+
+                $query->where(function ($q) use ($keyword) {
+                    $q->whereHas('customer', function ($customerQuery) use ($keyword) {
+                        $customerQuery->where('full_name', 'like', '%' . $keyword . '%');
+                    })->orWhereHas('room', function ($roomQuery) use ($keyword) {
+                        $roomQuery->where('room_number', 'like', '%' . $keyword . '%');
+                    });
+                });
+            })
+            ->when($request->filled('status'), function ($query) use ($request) {
+                $query->where('status', $request->status);
+            })
+            ->when($request->filled('payment_filter'), function ($query) use ($request) {
+                if ($request->payment_filter === 'unpaid') {
+                    $query->havingRaw('COALESCE(paid_amount, 0) = 0');
+                } elseif ($request->payment_filter === 'partial') {
+                    $query->havingRaw('COALESCE(paid_amount, 0) > 0 AND COALESCE(paid_amount, 0) < total_price');
+                } elseif ($request->payment_filter === 'paid') {
+                    $query->havingRaw('total_price > 0 AND COALESCE(paid_amount, 0) >= total_price');
+                }
+            });
     }
 
     private function getAvailableRooms(?string $checkInDate, ?string $checkOutDate, ?int $ignoreBookingId = null)
