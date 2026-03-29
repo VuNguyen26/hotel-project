@@ -2,12 +2,12 @@
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                Danh sách phòng
+                Danh sách khách hàng
             </h2>
 
-            <a href="{{ route('rooms.create') }}"
+            <a href="{{ route('customers.create') }}"
                class="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">
-                + Thêm phòng
+                + Thêm khách hàng
             </a>
         </div>
     </x-slot>
@@ -21,53 +21,43 @@
             @endif
 
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
-                <h3 class="text-lg font-bold mb-4">Các phòng hiện có</h3>
+                <h3 class="text-lg font-bold mb-4">Các khách hàng hiện có</h3>
 
-                @if($rooms->count() > 0)
+                @if($customers->count() > 0)
                     <div class="overflow-x-auto">
                         <table class="min-w-full border border-gray-200">
                             <thead class="bg-gray-100">
                                 <tr>
                                     <th class="border px-4 py-2 text-left">ID</th>
-                                    <th class="border px-4 py-2 text-left">Số phòng</th>
-                                    <th class="border px-4 py-2 text-left">Loại phòng</th>
-                                    <th class="border px-4 py-2 text-left">Tầng</th>
-                                    <th class="border px-4 py-2 text-left">Trạng thái</th>
-                                    <th class="border px-4 py-2 text-left">Ghi chú</th>
+                                    <th class="border px-4 py-2 text-left">Họ và tên</th>
+                                    <th class="border px-4 py-2 text-left">Số điện thoại</th>
+                                    <th class="border px-4 py-2 text-left">Email</th>
+                                    <th class="border px-4 py-2 text-left">CCCD / CMND</th>
+                                    <th class="border px-4 py-2 text-left">Địa chỉ</th>
                                     <th class="border px-4 py-2 text-left">Ngày tạo</th>
                                     <th class="border px-4 py-2 text-center">Thao tác</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($rooms as $room)
+                                @foreach($customers as $customer)
                                     <tr>
-                                        <td class="border px-4 py-2">{{ $room->id }}</td>
-                                        <td class="border px-4 py-2">{{ $room->room_number }}</td>
-                                        <td class="border px-4 py-2">{{ $room->roomType->name }}</td>
-                                        <td class="border px-4 py-2">{{ $room->floor }}</td>
-                                        <td class="border px-4 py-2">
-                                            @if($room->status === 'available')
-                                                Còn trống
-                                            @elseif($room->status === 'booked')
-                                                Đã đặt
-                                            @elseif($room->status === 'occupied')
-                                                Đang sử dụng
-                                            @elseif($room->status === 'maintenance')
-                                                Bảo trì
-                                            @endif
-                                        </td>
-                                        <td class="border px-4 py-2">{{ $room->note }}</td>
-                                        <td class="border px-4 py-2">{{ $room->created_at->format('d/m/Y H:i') }}</td>
+                                        <td class="border px-4 py-2">{{ $customer->id }}</td>
+                                        <td class="border px-4 py-2">{{ $customer->full_name }}</td>
+                                        <td class="border px-4 py-2">{{ $customer->phone }}</td>
+                                        <td class="border px-4 py-2">{{ $customer->email }}</td>
+                                        <td class="border px-4 py-2">{{ $customer->identity_number }}</td>
+                                        <td class="border px-4 py-2">{{ $customer->address }}</td>
+                                        <td class="border px-4 py-2">{{ $customer->created_at->format('d/m/Y H:i') }}</td>
                                         <td class="border px-4 py-2">
                                             <div class="flex items-center justify-center gap-2">
-                                                <a href="{{ route('rooms.edit', $room->id) }}"
+                                                <a href="{{ route('customers.edit', $customer->id) }}"
                                                    class="rounded bg-yellow-500 px-3 py-1 text-white hover:bg-yellow-600">
                                                     Sửa
                                                 </a>
 
-                                                <form action="{{ route('rooms.destroy', $room->id) }}"
+                                                <form action="{{ route('customers.destroy', $customer->id) }}"
                                                       method="POST"
-                                                      onsubmit="return confirm('Bạn có chắc muốn xóa phòng này không?');">
+                                                      onsubmit="return confirm('Bạn có chắc muốn xóa khách hàng này không?');">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit"
@@ -83,7 +73,7 @@
                         </table>
                     </div>
                 @else
-                    <p class="text-gray-500">Chưa có phòng nào.</p>
+                    <p class="text-gray-500">Chưa có khách hàng nào.</p>
                 @endif
             </div>
         </div>

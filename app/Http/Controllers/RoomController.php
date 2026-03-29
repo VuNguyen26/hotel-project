@@ -56,16 +56,43 @@ class RoomController extends Controller
 
     public function edit(Room $room)
     {
-        //
+        $roomTypes = RoomType::orderBy('name')->get();
+        return view('rooms.edit', compact('room', 'roomTypes'));
     }
 
     public function update(Request $request, Room $room)
     {
-        //
+        $request->validate([
+            'room_number' => 'required|string|max:50|unique:rooms,room_number,' . $room->id,
+            'room_type_id' => 'required|exists:room_types,id',
+            'floor' => 'nullable|integer|min:1',
+            'status' => 'required|in:available,booked,occupied,maintenance',
+            'note' => 'nullable|string',
+        ], [
+            'room_number.required' => 'Vui lòng nhập số phòng.',
+            'room_number.unique' => 'Số phòng đã tồn tại.',
+            'room_type_id.required' => 'Vui lòng chọn loại phòng.',
+            'room_type_id.exists' => 'Loại phòng không hợp lệ.',
+            'floor.integer' => 'Tầng phải là số nguyên.',
+            'floor.min' => 'Tầng phải lớn hơn hoặc bằng 1.',
+            'status.required' => 'Vui lòng chọn trạng thái phòng.',
+        ]);
+
+        $room->update([
+            'room_number' => $request->room_number,
+            'room_type_id' => $request->room_type_id,
+            'floor' => $request->floor,
+            'status' => $request->status,
+            'note' => $request->note,
+        ]);
+
+        return redirect()->route('rooms.index')->with('success', 'Cập nhật phòng thành công.');
     }
 
     public function destroy(Room $room)
     {
-        //
+        $room->delete();
+
+        return redirect()->route('rooms.index')->with('success', 'Xóa phòng thành công.');
     }
 }
