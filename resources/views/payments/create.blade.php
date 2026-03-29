@@ -12,14 +12,14 @@
 
     <div class="py-8">
         <div class="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-            <div class="rounded-3xl border border-slate-200 bg-white shadow-sm">
-                <div class="border-b border-slate-100 px-6 py-5">
-                    <h3 class="text-lg font-bold text-slate-900">Thông tin thanh toán</h3>
+            <div class="form-card">
+                <div class="form-card-header">
+                    <h3 class="section-title">Thông tin thanh toán</h3>
                 </div>
 
-                <div class="px-6 py-6">
+                <div class="form-card-body">
                     @if ($errors->any())
-                        <div class="mb-4 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-rose-700">
+                        <div class="alert-error mb-4">
                             <ul class="list-disc pl-5">
                                 @foreach ($errors->all() as $error)
                                     <li>{{ $error }}</li>
@@ -29,13 +29,12 @@
                     @endif
 
                     @if($payableBookings->count() == 0)
-                        <div class="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-amber-800">
+                        <div class="empty-state">
                             Hiện không có booking nào cần thanh toán thêm.
                         </div>
 
                         <div class="mt-4">
-                            <a href="{{ route('payments.index') }}"
-                               class="rounded-xl bg-slate-700 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800">
+                            <a href="{{ route('payments.index') }}" class="btn-secondary">
                                 Quay lại danh sách thanh toán
                             </a>
                         </div>
@@ -44,14 +43,8 @@
                             @csrf
 
                             <div>
-                                <label for="booking_id" class="mb-1 block text-sm font-medium text-slate-700">
-                                    Booking
-                                </label>
-                                <select
-                                    name="booking_id"
-                                    id="booking_id"
-                                    class="w-full rounded-xl border border-slate-300 px-4 py-3 focus:border-blue-500 focus:ring-blue-500"
-                                >
+                                <label for="booking_id" class="form-label">Booking</label>
+                                <select name="booking_id" id="booking_id" class="form-select">
                                     <option value="">-- Chọn booking cần thanh toán --</option>
                                     @foreach($payableBookings as $booking)
                                         @php
@@ -78,28 +71,13 @@
                             </div>
 
                             <div>
-                                <label for="amount" class="mb-1 block text-sm font-medium text-slate-700">
-                                    Số tiền thanh toán
-                                </label>
-                                <input
-                                    type="number"
-                                    name="amount"
-                                    id="amount"
-                                    value="{{ old('amount') }}"
-                                    class="w-full rounded-xl border border-slate-300 px-4 py-3 focus:border-blue-500 focus:ring-blue-500"
-                                    placeholder="Nhập số tiền khách thanh toán"
-                                >
+                                <label for="amount" class="form-label">Số tiền thanh toán</label>
+                                <input type="number" name="amount" id="amount" value="{{ old('amount') }}" class="form-input" placeholder="Nhập số tiền khách thanh toán">
                             </div>
 
                             <div>
-                                <label for="payment_method" class="mb-1 block text-sm font-medium text-slate-700">
-                                    Phương thức thanh toán
-                                </label>
-                                <select
-                                    name="payment_method"
-                                    id="payment_method"
-                                    class="w-full rounded-xl border border-slate-300 px-4 py-3 focus:border-blue-500 focus:ring-blue-500"
-                                >
+                                <label for="payment_method" class="form-label">Phương thức thanh toán</label>
+                                <select name="payment_method" id="payment_method" class="form-select">
                                     <option value="">-- Chọn phương thức --</option>
                                     <option value="cash" {{ old('payment_method') == 'cash' ? 'selected' : '' }}>Tiền mặt</option>
                                     <option value="transfer" {{ old('payment_method') == 'transfer' ? 'selected' : '' }}>Chuyển khoản</option>
@@ -108,32 +86,13 @@
                             </div>
 
                             <div>
-                                <label for="note" class="mb-1 block text-sm font-medium text-slate-700">
-                                    Ghi chú
-                                </label>
-                                <textarea
-                                    name="note"
-                                    id="note"
-                                    rows="4"
-                                    class="w-full rounded-xl border border-slate-300 px-4 py-3 focus:border-blue-500 focus:ring-blue-500"
-                                    placeholder="Nhập ghi chú nếu có"
-                                >{{ old('note') }}</textarea>
+                                <label for="note" class="form-label">Ghi chú</label>
+                                <textarea name="note" id="note" rows="4" class="form-textarea" placeholder="Nhập ghi chú nếu có">{{ old('note') }}</textarea>
                             </div>
 
                             <div class="flex items-center gap-3">
-                                <button
-                                    type="submit"
-                                    class="rounded-xl bg-blue-600 px-5 py-3 text-sm font-medium text-white shadow-sm hover:bg-blue-700"
-                                >
-                                    Lưu thanh toán
-                                </button>
-
-                                <a
-                                    href="{{ route('payments.index') }}"
-                                    class="rounded-xl bg-slate-600 px-5 py-3 text-sm font-medium text-white hover:bg-slate-700"
-                                >
-                                    Quay lại
-                                </a>
+                                <button type="submit" class="btn-primary">Lưu thanh toán</button>
+                                <a href="{{ route('payments.index') }}" class="btn-secondary">Quay lại</a>
                             </div>
                         </form>
                     @endif

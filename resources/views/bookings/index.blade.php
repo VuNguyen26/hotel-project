@@ -126,51 +126,51 @@
                                             <td class="border-b border-slate-100 px-4 py-4 text-sm text-slate-700">{{ $booking->children }}</td>
                                             <td class="border-b border-slate-100 px-4 py-4 text-sm font-semibold text-slate-800">{{ number_format($booking->total_price, 0, ',', '.') }} VNĐ</td>
 
-                                            <td class="border-b border-slate-100 px-4 py-4 text-sm">
+                                            <td class="border-b border-slate-100 px-4 py-4 text-sm table-badge-cell">
                                                 @if($paidAmount >= $booking->total_price && $booking->total_price > 0)
-                                                    <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
+                                                    <span class="badge badge-green">
                                                         Đã thanh toán
                                                     </span>
                                                 @elseif($paidAmount > 0)
                                                     <div class="flex flex-col gap-1">
-                                                        <span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700 w-fit">
+                                                        <span class="badge badge-amber w-fit">
                                                             Một phần
                                                         </span>
-                                                        <span class="text-xs text-slate-500">
+                                                        <span class="text-xs text-slate-500 whitespace-nowrap">
                                                             Còn {{ number_format($remainingAmount, 0, ',', '.') }} VNĐ
                                                         </span>
                                                     </div>
                                                 @else
-                                                    <span class="rounded-full bg-rose-100 px-3 py-1 text-xs font-semibold text-rose-700">
+                                                    <span class="badge badge-rose">
                                                         Chưa thanh toán
                                                     </span>
                                                 @endif
                                             </td>
 
-                                            <td class="border-b border-slate-100 px-4 py-4 text-sm">
+                                            <td class="border-b border-slate-100 px-4 py-4 text-sm table-badge-cell">
                                                 @if($booking->status === 'pending')
-                                                    <span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">Chờ xác nhận</span>
+                                                    <span class="badge badge-amber">Chờ xác nhận</span>
                                                 @elseif($booking->status === 'confirmed')
-                                                    <span class="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">Đã xác nhận</span>
+                                                    <span class="badge badge-blue">Đã xác nhận</span>
                                                 @elseif($booking->status === 'checked_in')
-                                                    <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">Đã nhận phòng</span>
+                                                    <span class="badge badge-green">Đã nhận phòng</span>
                                                 @elseif($booking->status === 'checked_out')
-                                                    <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">Đã trả phòng</span>
+                                                    <span class="badge badge-slate">Đã trả phòng</span>
                                                 @elseif($booking->status === 'cancelled')
-                                                    <span class="rounded-full bg-rose-100 px-3 py-1 text-xs font-semibold text-rose-700">Đã hủy</span>
+                                                    <span class="badge badge-rose">Đã hủy</span>
                                                 @endif
                                             </td>
 
                                             <td class="border-b border-slate-100 px-4 py-4 text-sm text-slate-700">{{ $booking->created_at->format('d/m/Y H:i') }}</td>
 
-                                            <td class="border-b border-slate-100 px-4 py-4">
-                                                <div class="flex flex-wrap items-center justify-center gap-2">
+                                            <td class="border-b border-slate-100 px-4 py-4 align-top">
+                                                <div class="action-stack">
                                                     @if($booking->status === 'pending')
                                                         <form action="{{ route('bookings.update-status', $booking->id) }}" method="POST">
                                                             @csrf
                                                             @method('PATCH')
                                                             <input type="hidden" name="status" value="confirmed">
-                                                            <button type="submit" class="rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-700">
+                                                            <button type="submit" class="action-btn-sm bg-blue-600 hover:bg-blue-700">
                                                                 Xác nhận
                                                             </button>
                                                         </form>
@@ -179,7 +179,7 @@
                                                             @csrf
                                                             @method('PATCH')
                                                             <input type="hidden" name="status" value="cancelled">
-                                                            <button type="submit" class="rounded-lg bg-rose-600 px-3 py-2 text-xs font-semibold text-white hover:bg-rose-700">
+                                                            <button type="submit" class="action-btn-sm bg-rose-600 hover:bg-rose-700">
                                                                 Hủy
                                                             </button>
                                                         </form>
@@ -188,7 +188,7 @@
                                                             @csrf
                                                             @method('PATCH')
                                                             <input type="hidden" name="status" value="checked_in">
-                                                            <button type="submit" class="rounded-lg bg-emerald-600 px-3 py-2 text-xs font-semibold text-white hover:bg-emerald-700">
+                                                            <button type="submit" class="action-btn-sm bg-emerald-600 hover:bg-emerald-700">
                                                                 Check-in
                                                             </button>
                                                         </form>
@@ -206,7 +206,7 @@
                                                             @csrf
                                                             @method('PATCH')
                                                             <input type="hidden" name="status" value="checked_out">
-                                                            <button type="submit" class="rounded-lg bg-slate-700 px-3 py-2 text-xs font-semibold text-white hover:bg-slate-800">
+                                                            <button type="submit" class="action-btn-sm bg-slate-700 hover:bg-slate-800">
                                                                 Check-out
                                                             </button>
                                                         </form>
@@ -216,17 +216,17 @@
                                                 </div>
                                             </td>
 
-                                            <td class="border-b border-slate-100 px-4 py-4">
-                                                <div class="flex flex-wrap items-center justify-center gap-2">
+                                            <td class="border-b border-slate-100 px-4 py-4 align-top">
+                                                <div class="action-stack">
                                                     @if($booking->status !== 'cancelled' && $remainingAmount > 0)
                                                         <a href="{{ route('payments.create', ['booking' => $booking->id]) }}"
-                                                           class="rounded-lg bg-violet-600 px-3 py-2 text-xs font-semibold text-white hover:bg-violet-700">
+                                                            class="action-btn-sm bg-violet-600 hover:bg-violet-700">
                                                             Thanh toán
                                                         </a>
                                                     @endif
 
-                                                    <a href="{{ route('bookings.edit', $booking->id) }}"
-                                                       class="rounded-lg bg-amber-500 px-3 py-2 text-xs font-semibold text-white hover:bg-amber-600">
+                                                   <a href="{{ route('bookings.edit', $booking->id) }}"
+                                                        class="action-btn-sm bg-amber-500 hover:bg-amber-600">
                                                         Sửa
                                                     </a>
 
@@ -236,7 +236,7 @@
                                                         @csrf
                                                         @method('DELETE')
                                                         <button type="submit"
-                                                                class="rounded-lg bg-rose-600 px-3 py-2 text-xs font-semibold text-white hover:bg-rose-700">
+                                                                class="action-btn-sm bg-rose-600 hover:bg-rose-700">
                                                             Xóa
                                                         </button>
                                                     </form>
