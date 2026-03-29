@@ -22,14 +22,14 @@
                         href="{{ route('public.rooms.index') }}"
                         class="rounded-2xl bg-sky-500 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-900/30 transition hover:bg-sky-600"
                     >
-                        Xem danh sách phòng
+                        Xem phòng ngay
                     </a>
 
                     <a
-                        href="{{ route('login') }}"
+                        href="{{ route('public.bookings.lookup') }}"
                         class="rounded-2xl border border-white/20 bg-white/10 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/20"
                     >
-                        Vào trang admin
+                        Tra cứu booking
                     </a>
                 </div>
             </div>
@@ -65,7 +65,7 @@
                 Chọn hạng phòng phù hợp với nhu cầu của bạn
             </h2>
             <p class="mt-4 text-slate-600">
-                Dưới đây là các loại phòng hiện có trong hệ thống. Ở bước sau mình sẽ làm tiếp trang danh sách phòng chi tiết và tìm phòng trống theo ngày.
+                Dưới đây là các loại phòng hiện có trong hệ thống. Bạn có thể xem danh sách phòng, kiểm tra phòng trống theo ngày và gửi yêu cầu đặt phòng ngay trên website.
             </p>
         </div>
 
@@ -112,4 +112,30 @@
             @endforelse
         </div>
     </section>
+    <section class="mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:px-8">
+    <div class="rounded-[2rem] border border-sky-200 bg-sky-50 p-8">
+        <div class="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+                <p class="text-sm font-semibold uppercase tracking-[0.2em] text-sky-700">
+                    Đã đặt phòng rồi?
+                </p>
+                <h2 class="mt-3 text-3xl font-extrabold tracking-tight text-slate-900">
+                    Tra cứu booking nhanh chóng
+                </h2>
+                <p class="mt-4 max-w-2xl text-slate-600">
+                    Nếu bạn đã gửi yêu cầu đặt phòng, hãy dùng mã booking cùng email hoặc số điện thoại để xem lại trạng thái booking và tình trạng thanh toán.
+                </p>
+            </div>
+
+            <div>
+                <a
+                    href="{{ route('public.bookings.lookup') }}"
+                    class="inline-flex rounded-2xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+                >
+                    Tra cứu booking
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
 </x-layouts.public>

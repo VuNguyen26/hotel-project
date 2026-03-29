@@ -1,5 +1,6 @@
 <x-layouts.public title="Đặt phòng">
     @php
+        $today = now()->toDateString();
         $displayCheckIn = old('check_in_date', $checkInDate);
         $displayCheckOut = old('check_out_date', $checkOutDate);
 
@@ -227,6 +228,7 @@
                                 <input
                                     type="date"
                                     name="check_in_date"
+                                    min="{{ $today }}"
                                     value="{{ old('check_in_date', $checkInDate) }}"
                                     class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200"
                                 >
@@ -239,6 +241,7 @@
                                 <input
                                     type="date"
                                     name="check_out_date"
+                                    min="{{ old('check_in_date', $checkInDate ?: $today) }}"
                                     value="{{ old('check_out_date', $checkOutDate) }}"
                                     class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200"
                                 >
@@ -296,4 +299,40 @@
             </div>
         </div>
     </section>
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const checkInInput = document.querySelector('input[name="check_in_date"]');
+        const checkOutInput = document.querySelector('input[name="check_out_date"]');
+        const fallbackMin = '{{ $today }}';
+
+        if (!checkInInput || !checkOutInput) return;
+
+        function formatDate(date) {
+            const y = date.getFullYear();
+            const m = String(date.getMonth() + 1).padStart(2, '0');
+            const d = String(date.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+
+        function syncCheckoutMin() {
+            if (!checkInInput.value) {
+                checkOutInput.min = fallbackMin;
+                return;
+            }
+
+            const minCheckout = new Date(checkInInput.value);
+            minCheckout.setDate(minCheckout.getDate() + 1);
+
+            const minCheckoutValue = formatDate(minCheckout);
+            checkOutInput.min = minCheckoutValue;
+
+            if (!checkOutInput.value || checkOutInput.value <= checkInInput.value) {
+                checkOutInput.value = minCheckoutValue;
+            }
+        }
+
+        syncCheckoutMin();
+        checkInInput.addEventListener('change', syncCheckoutMin);
+    });
+</script>
 </x-layouts.public>

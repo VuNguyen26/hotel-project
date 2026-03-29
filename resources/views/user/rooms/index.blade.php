@@ -1,3 +1,7 @@
+@php
+    $today = now()->toDateString();
+@endphp
+
 <x-layouts.public title="Danh sách phòng">
     <section class="border-b border-slate-200 bg-white">
         <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
@@ -10,9 +14,24 @@
             </h1>
 
             <p class="mt-4 max-w-3xl text-lg text-slate-600">
-                Chọn khoảng thời gian lưu trú để hệ thống lọc ra các phòng không bị trùng lịch booking.
-                Đây là bước quan trọng trước khi làm form đặt phòng phía user.
+                Chọn khoảng thời gian lưu trú để hệ thống lọc ra các phòng không bị trùng lịch booking. Bạn cũng có thể lọc theo loại phòng, sức chứa và mức giá.
             </p>
+
+            <div class="mt-6 flex flex-wrap gap-3">
+                <a
+                    href="{{ route('public.rooms.index') }}"
+                    class="rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
+                >
+                    Tất cả phòng
+                </a>
+
+                <a
+                    href="{{ route('public.bookings.lookup') }}"
+                    class="rounded-full border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
+                >
+                    Tra cứu booking
+                </a>
+            </div>
 
             @if($hasDateSearch)
                 <div class="mt-6 rounded-3xl border border-emerald-200 bg-emerald-50 p-5 text-emerald-800">
@@ -46,7 +65,7 @@
                                 Tìm phòng trống theo ngày
                             </p>
                             <p class="mt-1 text-xs leading-5 text-sky-700">
-                                Hệ thống sẽ loại các phòng có booking bị trùng trong khoảng ngày bạn chọn.
+                                Hệ thống sẽ loại các phòng có booking trùng trong khoảng ngày bạn chọn.
                             </p>
 
                             <div class="mt-4 space-y-4">
@@ -57,6 +76,7 @@
                                     <input
                                         type="date"
                                         name="check_in_date"
+                                        min="{{ $today }}"
                                         value="{{ request('check_in_date') }}"
                                         class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200"
                                     >
@@ -69,6 +89,7 @@
                                     <input
                                         type="date"
                                         name="check_out_date"
+                                        min="{{ request('check_in_date') ?: $today }}"
                                         value="{{ request('check_out_date') }}"
                                         class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200"
                                     >
@@ -179,131 +200,165 @@
                     </a>
                 </div>
 
-                <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-                    @forelse($rooms as $room)
-                        @php
-                            if ($hasDateSearch) {
-                                $badgeClasses = 'bg-emerald-100 text-emerald-700';
-                                $statusText = 'Trống theo ngày đã chọn';
-                            } else {
-                                $badgeClasses = match($room->status) {
-                                    'available' => 'bg-emerald-100 text-emerald-700',
-                                    'booked' => 'bg-amber-100 text-amber-700',
-                                    'occupied' => 'bg-rose-100 text-rose-700',
-                                    default => 'bg-slate-100 text-slate-700',
-                                };
+                @if($rooms->count() > 0)
+                    <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+                        @foreach($rooms as $room)
+                            @php
+                                if ($hasDateSearch) {
+                                    $badgeClasses = 'bg-emerald-100 text-emerald-700';
+                                    $statusText = 'Trống theo ngày đã chọn';
+                                } else {
+                                    $badgeClasses = match($room->status) {
+                                        'available' => 'bg-emerald-100 text-emerald-700',
+                                        'booked' => 'bg-amber-100 text-amber-700',
+                                        'occupied' => 'bg-rose-100 text-rose-700',
+                                        default => 'bg-slate-100 text-slate-700',
+                                    };
 
-                                $statusText = match($room->status) {
-                                    'available' => 'Còn trống',
-                                    'booked' => 'Đã được đặt',
-                                    'occupied' => 'Đang sử dụng',
-                                    default => ucfirst($room->status),
-                                };
-                            }
+                                    $statusText = match($room->status) {
+                                        'available' => 'Còn trống',
+                                        'booked' => 'Đã được đặt',
+                                        'occupied' => 'Đang sử dụng',
+                                        default => ucfirst($room->status),
+                                    };
+                                }
 
-                            $detailParams = ['room' => $room->id];
+                                $detailParams = ['room' => $room->id];
 
-                            if (request('check_in_date')) {
-                                $detailParams['check_in_date'] = request('check_in_date');
-                            }
+                                if (request('check_in_date')) {
+                                    $detailParams['check_in_date'] = request('check_in_date');
+                                }
 
-                            if (request('check_out_date')) {
-                                $detailParams['check_out_date'] = request('check_out_date');
-                            }
-                        @endphp
+                                if (request('check_out_date')) {
+                                    $detailParams['check_out_date'] = request('check_out_date');
+                                }
 
-                        <article class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
-                            <div class="h-44 bg-gradient-to-br from-sky-100 via-cyan-50 to-slate-100"></div>
+                                $bookParams = [
+                                    'room' => $room->id,
+                                    'check_in_date' => request('check_in_date'),
+                                    'check_out_date' => request('check_out_date'),
+                                ];
+                            @endphp
 
-                            <div class="p-6">
-                                <div class="flex items-start justify-between gap-3">
-                                    <div>
-                                        <p class="text-sm font-semibold text-sky-600">
-                                            {{ $room->roomType?->name }}
-                                        </p>
-                                        <h3 class="mt-1 text-xl font-extrabold text-slate-900">
-                                            Phòng {{ $room->room_number }}
-                                        </h3>
+                            <article class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+                                <div class="h-44 bg-gradient-to-br from-sky-100 via-cyan-50 to-slate-100"></div>
+
+                                <div class="p-6">
+                                    <div class="flex items-start justify-between gap-3">
+                                        <div>
+                                            <p class="text-sm font-semibold text-sky-600">
+                                                {{ $room->roomType?->name }}
+                                            </p>
+                                            <h3 class="mt-1 text-xl font-extrabold text-slate-900">
+                                                Phòng {{ $room->room_number }}
+                                            </h3>
+                                        </div>
+
+                                        <span class="rounded-full px-3 py-1 text-xs font-semibold {{ $badgeClasses }}">
+                                            {{ $statusText }}
+                                        </span>
                                     </div>
 
-                                    <span class="rounded-full px-3 py-1 text-xs font-semibold {{ $badgeClasses }}">
-                                        {{ $statusText }}
-                                    </span>
+                                    <div class="mt-5 grid grid-cols-2 gap-4 rounded-2xl bg-slate-50 p-4">
+                                        <div>
+                                            <p class="text-xs uppercase tracking-wide text-slate-500">Giá / đêm</p>
+                                            <p class="mt-2 text-lg font-bold text-slate-900">
+                                                {{ number_format($room->roomType?->price ?? 0, 0, ',', '.') }} đ
+                                            </p>
+                                        </div>
+
+                                        <div>
+                                            <p class="text-xs uppercase tracking-wide text-slate-500">Sức chứa</p>
+                                            <p class="mt-2 text-lg font-bold text-slate-900">
+                                                {{ $room->roomType?->capacity ?? 0 }} người
+                                            </p>
+                                        </div>
+
+                                        <div>
+                                            <p class="text-xs uppercase tracking-wide text-slate-500">Tầng</p>
+                                            <p class="mt-2 text-base font-semibold text-slate-900">
+                                                {{ $room->floor ?? 'N/A' }}
+                                            </p>
+                                        </div>
+
+                                        <div>
+                                            <p class="text-xs uppercase tracking-wide text-slate-500">Loại phòng</p>
+                                            <p class="mt-2 text-base font-semibold text-slate-900">
+                                                {{ $room->roomType?->name ?? 'N/A' }}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div class="mt-5">
+                                        <p class="text-sm leading-6 text-slate-600">
+                                            {{ $room->roomType?->description ?: 'Không gian lưu trú tiện nghi, phù hợp cho nhu cầu nghỉ ngắn ngày và dài ngày.' }}
+                                        </p>
+                                    </div>
+
+                                    <div class="mt-6 flex items-center justify-between gap-3">
+                                        <span class="text-sm text-slate-500">
+                                            Mã phòng: #{{ $room->id }}
+                                        </span>
+
+                                        <div class="flex gap-2">
+                                            <a
+                                                href="{{ route('public.rooms.show', $detailParams) }}"
+                                                class="rounded-2xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
+                                            >
+                                                Chi tiết
+                                            </a>
+
+                                            <a
+                                                href="{{ route('public.bookings.create', $bookParams) }}"
+                                                class="rounded-2xl bg-sky-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-600"
+                                            >
+                                                Đặt ngay
+                                            </a>
+                                        </div>
+                                    </div>
                                 </div>
+                            </article>
+                        @endforeach
+                    </div>
 
-                                <div class="mt-5 grid grid-cols-2 gap-4 rounded-2xl bg-slate-50 p-4">
-                                    <div>
-                                        <p class="text-xs uppercase tracking-wide text-slate-500">Giá / đêm</p>
-                                        <p class="mt-2 text-lg font-bold text-slate-900">
-                                            {{ number_format($room->roomType?->price ?? 0, 0, ',', '.') }} đ
-                                        </p>
-                                    </div>
+                    <div class="mt-8">
+                        {{ $rooms->links() }}
+                    </div>
+                @else
+                    <div class="rounded-[2rem] border border-dashed border-slate-300 bg-white p-10 text-center shadow-sm">
+                        <div class="mx-auto max-w-xl">
+                            <h3 class="text-2xl font-extrabold text-slate-900">
+                                Không có phòng phù hợp
+                            </h3>
 
-                                    <div>
-                                        <p class="text-xs uppercase tracking-wide text-slate-500">Sức chứa</p>
-                                        <p class="mt-2 text-lg font-bold text-slate-900">
-                                            {{ $room->roomType?->capacity ?? 0 }} người
-                                        </p>
-                                    </div>
+                            @if($hasDateSearch)
+                                <p class="mt-4 text-slate-600">
+                                    Không tìm thấy phòng trống trong khoảng ngày bạn đã chọn. Bạn hãy thử đổi ngày nhận phòng, ngày trả phòng hoặc giảm bớt bộ lọc.
+                                </p>
+                            @else
+                                <p class="mt-4 text-slate-600">
+                                    Hiện chưa có phòng phù hợp với bộ lọc đang chọn. Bạn có thể reset bộ lọc để xem toàn bộ danh sách phòng.
+                                </p>
+                            @endif
 
-                                    <div>
-                                        <p class="text-xs uppercase tracking-wide text-slate-500">Tầng</p>
-                                        <p class="mt-2 text-base font-semibold text-slate-900">
-                                            {{ $room->floor ?? 'N/A' }}
-                                        </p>
-                                    </div>
+                            <div class="mt-6 flex flex-wrap justify-center gap-3">
+                                <a
+                                    href="{{ route('public.rooms.index') }}"
+                                    class="rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+                                >
+                                    Xem tất cả phòng
+                                </a>
 
-                                    <div>
-                                        <p class="text-xs uppercase tracking-wide text-slate-500">Loại phòng</p>
-                                        <p class="mt-2 text-base font-semibold text-slate-900">
-                                            {{ $room->roomType?->name ?? 'N/A' }}
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <div class="mt-5">
-                                    <p class="text-sm leading-6 text-slate-600">
-                                        {{ $room->roomType?->description ?: 'Không gian lưu trú tiện nghi, phù hợp cho nhu cầu nghỉ ngắn ngày và dài ngày.' }}
-                                    </p>
-                                </div>
-
-                                <div class="mt-6 flex items-center justify-between gap-3">
-                                    <span class="text-sm text-slate-500">
-                                        Mã phòng: #{{ $room->id }}
-                                    </span>
-
-                                    <div class="flex gap-2">
-                                        <a
-                                            href="{{ route('public.rooms.show', $detailParams) }}"
-                                            class="rounded-2xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
-                                        >
-                                            Chi tiết
-                                        </a>
-
-                                        <a
-                                            href="{{ route('public.bookings.create', [
-                                                'room' => $room->id,
-                                                'check_in_date' => request('check_in_date'),
-                                                'check_out_date' => request('check_out_date'),
-                                            ]) }}"
-                                            class="rounded-2xl bg-sky-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-600"
-                                        >
-                                            Đặt ngay
-                                        </a>
-                                    </div>
-                                </div>
+                                <a
+                                    href="{{ route('home') }}"
+                                    class="rounded-2xl border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
+                                >
+                                    Về trang chủ
+                                </a>
                             </div>
-                        </article>
-                    @empty
-                        <div class="rounded-3xl border border-dashed border-slate-300 bg-white p-10 text-center text-slate-500 md:col-span-2 xl:col-span-3">
-                            Không có phòng nào phù hợp với bộ lọc hiện tại.
                         </div>
-                    @endforelse
-                </div>
-
-                <div class="mt-8">
-                    {{ $rooms->links() }}
-                </div>
+                    </div>
+                @endif
             </div>
         </div>
     </section>
