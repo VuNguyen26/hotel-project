@@ -14,6 +14,13 @@ class HomeController extends Controller
             ->orderBy('price')
             ->get();
 
+        $featuredRooms = Room::with('roomType')
+            ->where('status', '!=', 'maintenance')
+            ->whereHas('roomType')
+            ->latest('id')
+            ->take(6)
+            ->get();
+
         $stats = [
             'room_types' => RoomType::count(),
             'rooms' => Room::count(),
@@ -21,6 +28,6 @@ class HomeController extends Controller
             'bookings' => Booking::count(),
         ];
 
-        return view('user.home', compact('roomTypes', 'stats'));
+        return view('user.home', compact('roomTypes', 'featuredRooms', 'stats'));
     }
 }
