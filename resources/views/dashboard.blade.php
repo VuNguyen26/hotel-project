@@ -1,177 +1,255 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div>
-                <h2 class="text-2xl font-bold tracking-tight text-slate-900">
-                    Dashboard quản lý khách sạn
-                </h2>
-                <p class="mt-1 text-sm text-slate-500">
-                    Theo dõi nhanh tình hình phòng, khách hàng và booking trong hệ thống.
-                </p>
-            </div>
-
-            <x-slot name="header">
-                <div>
-                    <h2 class="text-2xl font-bold tracking-tight text-slate-900">
-                        Dashboard quản lý khách sạn
-                    </h2>
-                    <p class="mt-1 text-sm text-slate-500">
-                        Theo dõi nhanh tình hình phòng, khách hàng và booking trong hệ thống.
-                    </p>
-                </div>
-            </x-slot>
+        <div>
+            <h2 class="text-2xl font-bold tracking-tight text-slate-900">
+                Dashboard quản lý khách sạn
+            </h2>
+            <p class="mt-1 text-sm text-slate-500">
+                Theo dõi nhanh phòng, khách hàng, booking, doanh thu và hiệu suất vận hành.
+            </p>
         </div>
     </x-slot>
 
-    <div class="py-8">
+    <div class="bg-[#F4F8FB] py-8">
         <div class="mx-auto flex max-w-7xl flex-col gap-6 px-4 sm:px-6 lg:px-8">
 
-            <div class="overflow-hidden rounded-3xl bg-gradient-to-r from-slate-900 via-blue-800 to-indigo-700 p-8 text-white shadow-xl">
-                <div class="grid gap-6 lg:grid-cols-[1.3fr_0.7fr] lg:items-center">
+            {{-- Hero premium --}}
+            <div class="overflow-hidden rounded-[30px] bg-gradient-to-r from-[#163A7D] via-[#1D458F] to-[#2550A4] shadow-[0_24px_70px_rgba(22,58,125,0.18)]">
+                <div class="grid gap-8 px-8 py-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
                     <div>
-                        <p class="text-sm font-medium uppercase tracking-[0.2em] text-blue-100">
-                            Hotel Admin Panel
-                        </p>
-                        <h3 class="mt-3 text-3xl font-bold leading-tight">
+                        <div class="inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-white/70">
+                            Premium dashboard
+                        </div>
+
+                        <h3 class="mt-5 text-3xl font-bold leading-tight text-white md:text-4xl">
                             Tổng quan hệ thống quản lý khách sạn
                         </h3>
-                        <p class="mt-3 max-w-2xl text-sm text-blue-100">
-                            Theo dõi nhanh số lượng phòng, khách hàng, booking và trạng thái vận hành
-                            để demo hệ thống một cách trực quan hơn.
+
+                        <p class="mt-4 max-w-2xl text-sm leading-7 text-white/75">
+                            Theo dõi booking, doanh thu, tỷ lệ lấp phòng và trạng thái vận hành trong
+                            một giao diện trực quan, hiện đại và dễ demo.
                         </p>
+
+                        <div class="mt-6 flex flex-wrap gap-3">
+                            <a href="{{ route('bookings.create') }}"
+                               class="rounded-2xl bg-[#20D3B3] px-5 py-3 text-sm font-semibold text-[#163A7D] transition hover:brightness-95">
+                                Tạo booking
+                            </a>
+
+                            <a href="{{ route('payments.index') }}"
+                               class="rounded-2xl border border-white/15 bg-white/5 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10">
+                                Xem thanh toán
+                            </a>
+                        </div>
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
-                        <div class="rounded-2xl bg-white/10 p-4 backdrop-blur">
-                            <div class="text-sm text-blue-100">Booking hiện có</div>
-                            <div class="mt-2 text-3xl font-bold">{{ $totalBookings }}</div>
+                        <div class="rounded-3xl border border-white/10 bg-white/10 p-5 backdrop-blur-sm">
+                            <div class="text-sm font-medium text-white/70">Doanh thu đã thu</div>
+                            <div class="mt-4 text-3xl font-bold text-white">
+                                {{ number_format($totalCollected, 0, ',', '.') }} VNĐ
+                            </div>
                         </div>
 
-                        <div class="rounded-2xl bg-white/10 p-4 backdrop-blur">
-                            <div class="text-sm text-blue-100">Phòng hiện có</div>
-                            <div class="mt-2 text-3xl font-bold">{{ $totalRooms }}</div>
+                        <div class="rounded-3xl border border-white/10 bg-white/10 p-5 backdrop-blur-sm">
+                            <div class="text-sm font-medium text-white/70">Tỷ lệ lấp phòng</div>
+                            <div class="mt-4 text-3xl font-bold text-white">{{ $occupancyRate }}%</div>
                         </div>
 
-                        <div class="rounded-2xl bg-white/10 p-4 backdrop-blur">
-                            <div class="text-sm text-blue-100">Khách hàng</div>
-                            <div class="mt-2 text-3xl font-bold">{{ $totalCustomers }}</div>
+                        <div class="rounded-3xl border border-white/10 bg-white/10 p-5 backdrop-blur-sm">
+                            <div class="text-sm font-medium text-white/70">Giao dịch đã thu</div>
+                            <div class="mt-4 text-3xl font-bold text-white">{{ $paidTransactions }}</div>
                         </div>
 
-                        <div class="rounded-2xl bg-white/10 p-4 backdrop-blur">
-                            <div class="text-sm text-blue-100">Loại phòng</div>
-                            <div class="mt-2 text-3xl font-bold">{{ $totalRoomTypes }}</div>
+                        <div class="rounded-3xl border border-white/10 bg-white/10 p-5 backdrop-blur-sm">
+                            <div class="text-sm font-medium text-white/70">Booking hiện có</div>
+                            <div class="mt-4 text-3xl font-bold text-white">{{ $totalBookings }}</div>
                         </div>
                     </div>
                 </div>
             </div>
 
+            {{-- KPI cards with mini charts --}}
             <div class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
-                <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
+                <div class="rounded-[28px] border border-[#E6EEF5] bg-white p-6 shadow-sm">
                     <div class="flex items-start justify-between">
                         <div>
-                            <p class="text-sm font-medium text-slate-500">Tổng loại phòng</p>
-                            <h3 class="mt-3 text-4xl font-bold text-blue-600">{{ $totalRoomTypes }}</h3>
+                            <div class="text-sm font-medium text-slate-500">Tổng loại phòng</div>
+                            <div class="mt-4 text-4xl font-bold text-[#163A7D] stat-counter" data-value="{{ $totalRoomTypes }}">0</div>
                         </div>
-                        <div class="rounded-2xl bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-600">
+                        <span class="rounded-full bg-[#EEF4FF] px-3 py-1 text-xs font-semibold text-[#2F5FD7]">
                             Room Types
-                        </div>
+                        </span>
+                    </div>
+                    <div class="mt-6 h-[70px]">
+                        <canvas id="roomTypeSparkChart"></canvas>
                     </div>
                 </div>
 
-                <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
+                <div class="rounded-[28px] border border-[#E6EEF5] bg-white p-6 shadow-sm">
                     <div class="flex items-start justify-between">
                         <div>
-                            <p class="text-sm font-medium text-slate-500">Tổng số phòng</p>
-                            <h3 class="mt-3 text-4xl font-bold text-emerald-600">{{ $totalRooms }}</h3>
+                            <div class="text-sm font-medium text-slate-500">Tổng số phòng</div>
+                            <div class="mt-4 text-4xl font-bold text-[#163A7D] stat-counter" data-value="{{ $totalRooms }}">0</div>
                         </div>
-                        <div class="rounded-2xl bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-600">
+                        <span class="rounded-full bg-[#EAFBF7] px-3 py-1 text-xs font-semibold text-[#169F87]">
                             Rooms
-                        </div>
+                        </span>
+                    </div>
+                    <div class="mt-6 h-[70px]">
+                        <canvas id="roomSparkChart"></canvas>
                     </div>
                 </div>
 
-                <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
+                <div class="rounded-[28px] border border-[#E6EEF5] bg-white p-6 shadow-sm">
                     <div class="flex items-start justify-between">
                         <div>
-                            <p class="text-sm font-medium text-slate-500">Tổng khách hàng</p>
-                            <h3 class="mt-3 text-4xl font-bold text-violet-600">{{ $totalCustomers }}</h3>
+                            <div class="text-sm font-medium text-slate-500">Tổng khách hàng</div>
+                            <div class="mt-4 text-4xl font-bold text-[#163A7D] stat-counter" data-value="{{ $totalCustomers }}">0</div>
                         </div>
-                        <div class="rounded-2xl bg-violet-50 px-3 py-2 text-xs font-semibold text-violet-600">
+                        <span class="rounded-full bg-[#F4F0FF] px-3 py-1 text-xs font-semibold text-[#7B57E8]">
                             Customers
-                        </div>
+                        </span>
+                    </div>
+                    <div class="mt-6 h-[70px]">
+                        <canvas id="customerSparkChart"></canvas>
                     </div>
                 </div>
 
-                <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
+                <div class="rounded-[28px] border border-[#E6EEF5] bg-white p-6 shadow-sm">
                     <div class="flex items-start justify-between">
                         <div>
-                            <p class="text-sm font-medium text-slate-500">Tổng booking</p>
-                            <h3 class="mt-3 text-4xl font-bold text-orange-500">{{ $totalBookings }}</h3>
+                            <div class="text-sm font-medium text-slate-500">Tổng booking</div>
+                            <div class="mt-4 text-4xl font-bold text-[#163A7D] stat-counter" data-value="{{ $totalBookings }}">0</div>
                         </div>
-                        <div class="rounded-2xl bg-orange-50 px-3 py-2 text-xs font-semibold text-orange-500">
+                        <span class="rounded-full bg-[#FFF3E8] px-3 py-1 text-xs font-semibold text-[#F08A24]">
                             Bookings
-                        </div>
+                        </span>
+                    </div>
+                    <div class="mt-6 h-[70px]">
+                        <canvas id="bookingSparkChart"></canvas>
                     </div>
                 </div>
             </div>
 
+            {{-- Room status cards --}}
             <div class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
-                <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                <div class="rounded-[28px] border border-[#E6EEF5] bg-white p-6 shadow-sm">
                     <div class="flex items-center justify-between">
-                        <p class="text-sm font-medium text-slate-500">Phòng còn trống</p>
-                        <span class="h-3 w-3 rounded-full bg-emerald-500"></span>
+                        <div class="text-sm font-medium text-slate-500">Phòng còn trống</div>
+                        <span class="h-3 w-3 rounded-full bg-[#20D3B3]"></span>
                     </div>
-                    <h3 class="mt-4 text-4xl font-bold text-emerald-600">{{ $availableRooms }}</h3>
-                    <div class="mt-5 h-2 rounded-full bg-slate-100">
-                        <div class="h-2 rounded-full bg-emerald-500" style="width: {{ $totalRooms > 0 ? ($availableRooms / $totalRooms) * 100 : 0 }}%"></div>
+                    <div class="mt-4 text-4xl font-bold text-[#163A7D] stat-counter" data-value="{{ $availableRooms }}">0</div>
+                    <div class="mt-6 h-2 rounded-full bg-slate-100">
+                        <div class="h-2 rounded-full bg-[#20D3B3]" style="width: {{ $totalRooms > 0 ? ($availableRooms / $totalRooms) * 100 : 0 }}%"></div>
                     </div>
                 </div>
 
-                <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                <div class="rounded-[28px] border border-[#E6EEF5] bg-white p-6 shadow-sm">
                     <div class="flex items-center justify-between">
-                        <p class="text-sm font-medium text-slate-500">Phòng đã đặt</p>
-                        <span class="h-3 w-3 rounded-full bg-amber-400"></span>
+                        <div class="text-sm font-medium text-slate-500">Phòng đã đặt</div>
+                        <span class="h-3 w-3 rounded-full bg-[#F2B321]"></span>
                     </div>
-                    <h3 class="mt-4 text-4xl font-bold text-amber-500">{{ $bookedRooms }}</h3>
-                    <div class="mt-5 h-2 rounded-full bg-slate-100">
-                        <div class="h-2 rounded-full bg-amber-400" style="width: {{ $totalRooms > 0 ? ($bookedRooms / $totalRooms) * 100 : 0 }}%"></div>
+                    <div class="mt-4 text-4xl font-bold text-[#163A7D] stat-counter" data-value="{{ $bookedRooms }}">0</div>
+                    <div class="mt-6 h-2 rounded-full bg-slate-100">
+                        <div class="h-2 rounded-full bg-[#F2B321]" style="width: {{ $totalRooms > 0 ? ($bookedRooms / $totalRooms) * 100 : 0 }}%"></div>
                     </div>
                 </div>
 
-                <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                <div class="rounded-[28px] border border-[#E6EEF5] bg-white p-6 shadow-sm">
                     <div class="flex items-center justify-between">
-                        <p class="text-sm font-medium text-slate-500">Phòng đang sử dụng</p>
-                        <span class="h-3 w-3 rounded-full bg-rose-500"></span>
+                        <div class="text-sm font-medium text-slate-500">Phòng đang sử dụng</div>
+                        <span class="h-3 w-3 rounded-full bg-[#F0526D]"></span>
                     </div>
-                    <h3 class="mt-4 text-4xl font-bold text-rose-500">{{ $occupiedRooms }}</h3>
-                    <div class="mt-5 h-2 rounded-full bg-slate-100">
-                        <div class="h-2 rounded-full bg-rose-500" style="width: {{ $totalRooms > 0 ? ($occupiedRooms / $totalRooms) * 100 : 0 }}%"></div>
+                    <div class="mt-4 text-4xl font-bold text-[#163A7D] stat-counter" data-value="{{ $occupiedRooms }}">0</div>
+                    <div class="mt-6 h-2 rounded-full bg-slate-100">
+                        <div class="h-2 rounded-full bg-[#F0526D]" style="width: {{ $totalRooms > 0 ? ($occupiedRooms / $totalRooms) * 100 : 0 }}%"></div>
                     </div>
                 </div>
 
-                <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                <div class="rounded-[28px] border border-[#E6EEF5] bg-white p-6 shadow-sm">
                     <div class="flex items-center justify-between">
-                        <p class="text-sm font-medium text-slate-500">Phòng bảo trì</p>
-                        <span class="h-3 w-3 rounded-full bg-slate-500"></span>
+                        <div class="text-sm font-medium text-slate-500">Phòng bảo trì</div>
+                        <span class="h-3 w-3 rounded-full bg-[#94A3B8]"></span>
                     </div>
-                    <h3 class="mt-4 text-4xl font-bold text-slate-600">{{ $maintenanceRooms }}</h3>
-                    <div class="mt-5 h-2 rounded-full bg-slate-100">
-                        <div class="h-2 rounded-full bg-slate-500" style="width: {{ $totalRooms > 0 ? ($maintenanceRooms / $totalRooms) * 100 : 0 }}%"></div>
+                    <div class="mt-4 text-4xl font-bold text-[#163A7D] stat-counter" data-value="{{ $maintenanceRooms }}">0</div>
+                    <div class="mt-6 h-2 rounded-full bg-slate-100">
+                        <div class="h-2 rounded-full bg-[#94A3B8]" style="width: {{ $totalRooms > 0 ? ($maintenanceRooms / $totalRooms) * 100 : 0 }}%"></div>
                     </div>
                 </div>
             </div>
 
-            <div class="rounded-3xl border border-slate-200 bg-white shadow-sm">
-                <div class="flex items-center justify-between border-b border-slate-100 px-6 py-5">
+            {{-- Main charts row --}}
+            <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
+                <div class="rounded-[28px] border border-[#E6EEF5] bg-white p-6 shadow-sm xl:col-span-2">
+                    <div class="mb-5">
+                        <h3 class="text-xl font-bold text-slate-900">Doanh thu 6 tháng gần nhất</h3>
+                        <p class="mt-1 text-sm text-slate-500">Biểu đồ đường thể hiện doanh thu theo tháng.</p>
+                    </div>
+                    <div class="h-[340px]">
+                        <canvas id="revenueLineChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="rounded-[28px] border border-[#E6EEF5] bg-white p-6 shadow-sm">
+                    <div class="mb-5">
+                        <h3 class="text-xl font-bold text-slate-900">Tình trạng phòng</h3>
+                        <p class="mt-1 text-sm text-slate-500">Tỷ trọng các trạng thái phòng hiện tại.</p>
+                    </div>
+                    <div class="h-[340px] flex items-center justify-center">
+                        <canvas id="roomStatusDoughnutChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Secondary charts row --}}
+            <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
+                <div class="rounded-[28px] border border-[#E6EEF5] bg-white p-6 shadow-sm xl:col-span-2">
+                    <div class="mb-5">
+                        <h3 class="text-xl font-bold text-slate-900">Booking 6 tháng gần nhất</h3>
+                        <p class="mt-1 text-sm text-slate-500">Biểu đồ cột thể hiện số lượng booking theo tháng.</p>
+                    </div>
+                    <div class="h-[340px]">
+                        <canvas id="bookingBarChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="rounded-[28px] border border-[#E6EEF5] bg-white p-6 shadow-sm">
+                    <div class="mb-5">
+                        <h3 class="text-xl font-bold text-slate-900">Thanh toán theo phương thức</h3>
+                        <p class="mt-1 text-sm text-slate-500">Phân bổ doanh thu theo cách thanh toán.</p>
+                    </div>
+                    <div class="h-[340px] flex items-center justify-center">
+                        <canvas id="paymentMethodDoughnutChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Booking status chart --}}
+            <div class="grid grid-cols-1 gap-6">
+                <div class="rounded-[28px] border border-[#E6EEF5] bg-white p-6 shadow-sm">
+                    <div class="mb-5">
+                        <h3 class="text-xl font-bold text-slate-900">Booking theo trạng thái</h3>
+                        <p class="mt-1 text-sm text-slate-500">Biểu đồ polar area thể hiện tình trạng booking trong hệ thống.</p>
+                    </div>
+                    <div class="h-[380px]">
+                        <canvas id="bookingStatusPolarChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Latest bookings --}}
+            <div class="overflow-hidden rounded-[28px] border border-[#E6EEF5] bg-white shadow-sm">
+                <div class="flex items-center justify-between border-b border-[#EEF3F8] px-6 py-6">
                     <div>
-                        <h3 class="text-lg font-bold text-slate-900">5 booking mới nhất</h3>
-                        <p class="mt-1 text-sm text-slate-500">
+                        <h3 class="text-[30px] font-bold tracking-tight text-slate-900">5 booking mới nhất</h3>
+                        <p class="mt-2 text-sm text-slate-500">
                             Theo dõi nhanh các lượt đặt phòng gần đây.
                         </p>
                     </div>
 
                     <a href="{{ route('bookings.index') }}"
-                       class="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50">
+                       class="rounded-2xl border border-[#E6EEF5] bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
                         Xem tất cả
                     </a>
                 </div>
@@ -181,42 +259,52 @@
                         <div class="overflow-x-auto">
                             <table class="min-w-full overflow-hidden rounded-2xl">
                                 <thead>
-                                    <tr class="bg-slate-50">
-                                        <th class="border-b border-slate-200 px-4 py-3 text-left text-sm font-semibold text-slate-700">ID</th>
-                                        <th class="border-b border-slate-200 px-4 py-3 text-left text-sm font-semibold text-slate-700">Khách hàng</th>
-                                        <th class="border-b border-slate-200 px-4 py-3 text-left text-sm font-semibold text-slate-700">Phòng</th>
-                                        <th class="border-b border-slate-200 px-4 py-3 text-left text-sm font-semibold text-slate-700">Ngày nhận</th>
-                                        <th class="border-b border-slate-200 px-4 py-3 text-left text-sm font-semibold text-slate-700">Ngày trả</th>
-                                        <th class="border-b border-slate-200 px-4 py-3 text-left text-sm font-semibold text-slate-700">Tổng tiền</th>
-                                        <th class="border-b border-slate-200 px-4 py-3 text-left text-sm font-semibold text-slate-700">Trạng thái</th>
+                                    <tr class="bg-[#F7FAFD]">
+                                        <th class="border-b border-[#EAF0F5] px-4 py-4 text-left text-sm font-semibold text-slate-700">ID</th>
+                                        <th class="border-b border-[#EAF0F5] px-4 py-4 text-left text-sm font-semibold text-slate-700">Khách hàng</th>
+                                        <th class="border-b border-[#EAF0F5] px-4 py-4 text-left text-sm font-semibold text-slate-700">Phòng</th>
+                                        <th class="border-b border-[#EAF0F5] px-4 py-4 text-left text-sm font-semibold text-slate-700">Ngày nhận</th>
+                                        <th class="border-b border-[#EAF0F5] px-4 py-4 text-left text-sm font-semibold text-slate-700">Ngày trả</th>
+                                        <th class="border-b border-[#EAF0F5] px-4 py-4 text-left text-sm font-semibold text-slate-700">Tổng tiền</th>
+                                        <th class="border-b border-[#EAF0F5] px-4 py-4 text-left text-sm font-semibold text-slate-700">Trạng thái</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach($latestBookings as $booking)
-                                        <tr class="hover:bg-slate-50">
-                                            <td class="border-b border-slate-100 px-4 py-4 text-sm text-slate-700">{{ $booking->id }}</td>
-                                            <td class="border-b border-slate-100 px-4 py-4 text-sm font-medium text-slate-800">{{ $booking->customer->full_name ?? '' }}</td>
-                                            <td class="border-b border-slate-100 px-4 py-4 text-sm text-slate-700">{{ $booking->room->room_number ?? '' }}</td>
-                                            <td class="border-b border-slate-100 px-4 py-4 text-sm text-slate-700">
+                                        <tr class="hover:bg-[#FAFCFE]">
+                                            <td class="border-b border-[#EEF3F8] px-4 py-4 text-sm text-slate-700">{{ $booking->id }}</td>
+                                            <td class="border-b border-[#EEF3F8] px-4 py-4 text-sm font-medium text-slate-800">{{ $booking->customer->full_name ?? '' }}</td>
+                                            <td class="border-b border-[#EEF3F8] px-4 py-4 text-sm text-slate-700">{{ $booking->room->room_number ?? '' }}</td>
+                                            <td class="border-b border-[#EEF3F8] px-4 py-4 text-sm text-slate-700">
                                                 {{ \Carbon\Carbon::parse($booking->check_in_date)->format('d/m/Y') }}
                                             </td>
-                                            <td class="border-b border-slate-100 px-4 py-4 text-sm text-slate-700">
+                                            <td class="border-b border-[#EEF3F8] px-4 py-4 text-sm text-slate-700">
                                                 {{ \Carbon\Carbon::parse($booking->check_out_date)->format('d/m/Y') }}
                                             </td>
-                                            <td class="border-b border-slate-100 px-4 py-4 text-sm font-semibold text-slate-800">
+                                            <td class="border-b border-[#EEF3F8] px-4 py-4 text-sm font-semibold text-slate-900">
                                                 {{ number_format($booking->total_price, 0, ',', '.') }} VNĐ
                                             </td>
-                                            <td class="border-b border-slate-100 px-4 py-4 text-sm">
+                                            <td class="border-b border-[#EEF3F8] px-4 py-4 text-sm">
                                                 @if($booking->status === 'pending')
-                                                    <span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">Chờ xác nhận</span>
+                                                    <span class="inline-flex rounded-full bg-[#FFF4D8] px-3 py-1 text-xs font-semibold text-[#A56A00]">
+                                                        Chờ xác nhận
+                                                    </span>
                                                 @elseif($booking->status === 'confirmed')
-                                                    <span class="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">Đã xác nhận</span>
+                                                    <span class="inline-flex rounded-full bg-[#EAF1FF] px-3 py-1 text-xs font-semibold text-[#2F5FD7]">
+                                                        Đã xác nhận
+                                                    </span>
                                                 @elseif($booking->status === 'checked_in')
-                                                    <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">Đã nhận phòng</span>
+                                                    <span class="inline-flex rounded-full bg-[#EAFBF7] px-3 py-1 text-xs font-semibold text-[#169F87]">
+                                                        Đã nhận phòng
+                                                    </span>
                                                 @elseif($booking->status === 'checked_out')
-                                                    <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">Đã trả phòng</span>
+                                                    <span class="inline-flex rounded-full bg-[#EEF3F8] px-3 py-1 text-xs font-semibold text-slate-700">
+                                                        Đã trả phòng
+                                                    </span>
                                                 @elseif($booking->status === 'cancelled')
-                                                    <span class="rounded-full bg-rose-100 px-3 py-1 text-xs font-semibold text-rose-700">Đã hủy</span>
+                                                    <span class="inline-flex rounded-full bg-[#FFE7EC] px-3 py-1 text-xs font-semibold text-[#D63C62]">
+                                                        Đã hủy
+                                                    </span>
                                                 @endif
                                             </td>
                                         </tr>
@@ -225,7 +313,7 @@
                             </table>
                         </div>
                     @else
-                        <div class="rounded-2xl border border-dashed border-slate-300 px-6 py-10 text-center text-slate-500">
+                        <div class="rounded-2xl border border-dashed border-[#D7E3EE] px-6 py-12 text-center text-slate-500">
                             Chưa có booking nào để hiển thị.
                         </div>
                     @endif
@@ -233,4 +321,307 @@
             </div>
         </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const labels = @json($chartLabels);
+            const bookingData = @json($bookingChartData);
+            const revenueData = @json($revenueChartData);
+
+            const roomTypeSparkData = @json($roomTypeSparkData);
+            const roomSparkData = @json($roomSparkData);
+            const customerSparkData = @json($customerSparkData);
+            const bookingSparkData = @json($bookingSparkData);
+
+            const roomStatusLabels = @json($roomStatusLabels);
+            const roomStatusData = @json($roomStatusData);
+
+            const paymentMethodLabels = @json($paymentMethodLabels);
+            const paymentMethodData = @json($paymentMethodData);
+
+            const bookingStatusLabels = @json($bookingStatusLabels);
+            const bookingStatusData = @json($bookingStatusData);
+
+            const gridColor = '#EAF0F5';
+            const labelColor = '#64748B';
+
+            function animateCounters() {
+                const counters = document.querySelectorAll('.stat-counter');
+
+                counters.forEach(counter => {
+                    const target = parseInt(counter.getAttribute('data-value')) || 0;
+                    const duration = 1200;
+                    const startTime = performance.now();
+
+                    function update(currentTime) {
+                        const progress = Math.min((currentTime - startTime) / duration, 1);
+                        const eased = 1 - Math.pow(1 - progress, 3);
+                        counter.textContent = Math.floor(eased * target).toLocaleString('vi-VN');
+
+                        if (progress < 1) {
+                            requestAnimationFrame(update);
+                        } else {
+                            counter.textContent = target.toLocaleString('vi-VN');
+                        }
+                    }
+
+                    requestAnimationFrame(update);
+                });
+            }
+
+            function createSparkline(canvasId, data, color) {
+                const ctx = document.getElementById(canvasId);
+                if (!ctx) return;
+
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: data,
+                            borderColor: color,
+                            backgroundColor: color + '22',
+                            fill: true,
+                            tension: 0.45,
+                            pointRadius: 0,
+                            borderWidth: 3
+                        }]
+                    },
+                    options: {
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: { enabled: false }
+                        },
+                        scales: {
+                            x: { display: false },
+                            y: { display: false }
+                        }
+                    }
+                });
+            }
+
+            createSparkline('roomTypeSparkChart', roomTypeSparkData, '#2F5FD7');
+            createSparkline('roomSparkChart', roomSparkData, '#20D3B3');
+            createSparkline('customerSparkChart', customerSparkData, '#7B57E8');
+            createSparkline('bookingSparkChart', bookingSparkData, '#F08A24');
+
+            const revenueCtx = document.getElementById('revenueLineChart');
+            if (revenueCtx) {
+                new Chart(revenueCtx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Doanh thu',
+                            data: revenueData,
+                            borderColor: '#20D3B3',
+                            backgroundColor: 'rgba(32, 211, 179, 0.14)',
+                            fill: true,
+                            tension: 0.42,
+                            pointRadius: 4,
+                            pointHoverRadius: 6,
+                            pointBackgroundColor: '#20D3B3',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2
+                        }]
+                    },
+                    options: {
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: labelColor,
+                                    font: { weight: '600' }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: { color: gridColor },
+                                ticks: { color: labelColor }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                grid: { color: gridColor },
+                                ticks: {
+                                    color: labelColor,
+                                    callback: function(value) {
+                                        return new Intl.NumberFormat('vi-VN').format(value);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            const bookingCtx = document.getElementById('bookingBarChart');
+            if (bookingCtx) {
+                new Chart(bookingCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Số booking',
+                            data: bookingData,
+                            backgroundColor: ['#2F5FD7', '#3E68DA', '#4D72DE', '#5D7CE1', '#6D86E5', '#7C90E8'],
+                            borderRadius: 12,
+                            maxBarThickness: 50
+                        }]
+                    },
+                    options: {
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: labelColor,
+                                    font: { weight: '600' }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: { display: false },
+                                ticks: { color: labelColor }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                grid: { color: gridColor },
+                                ticks: {
+                                    stepSize: 1,
+                                    color: labelColor
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            const roomCtx = document.getElementById('roomStatusDoughnutChart');
+            if (roomCtx) {
+                new Chart(roomCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: roomStatusLabels,
+                        datasets: [{
+                            data: roomStatusData,
+                            backgroundColor: ['#20D3B3', '#F2B321', '#F0526D', '#94A3B8'],
+                            borderColor: '#FFFFFF',
+                            borderWidth: 6,
+                            hoverOffset: 8
+                        }]
+                    },
+                    options: {
+                        maintainAspectRatio: false,
+                        cutout: '68%',
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    color: labelColor,
+                                    usePointStyle: true,
+                                    pointStyle: 'circle',
+                                    padding: 18,
+                                    font: { weight: '600' }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            const paymentCtx = document.getElementById('paymentMethodDoughnutChart');
+            if (paymentCtx) {
+                new Chart(paymentCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: paymentMethodLabels,
+                        datasets: [{
+                            data: paymentMethodData,
+                            backgroundColor: ['#20D3B3', '#2F5FD7', '#7B57E8'],
+                            borderColor: '#FFFFFF',
+                            borderWidth: 6,
+                            hoverOffset: 8
+                        }]
+                    },
+                    options: {
+                        maintainAspectRatio: false,
+                        cutout: '68%',
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    color: labelColor,
+                                    usePointStyle: true,
+                                    pointStyle: 'circle',
+                                    padding: 18,
+                                    font: { weight: '600' }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            const bookingStatusCtx = document.getElementById('bookingStatusPolarChart');
+            if (bookingStatusCtx) {
+                new Chart(bookingStatusCtx, {
+                    type: 'polarArea',
+                    data: {
+                        labels: bookingStatusLabels,
+                        datasets: [{
+                            data: bookingStatusData,
+                            backgroundColor: [
+                                'rgba(242, 179, 33, 0.75)',
+                                'rgba(47, 95, 215, 0.75)',
+                                'rgba(32, 211, 179, 0.75)',
+                                'rgba(148, 163, 184, 0.75)',
+                                'rgba(240, 82, 109, 0.75)'
+                            ],
+                            borderColor: [
+                                '#F2B321',
+                                '#2F5FD7',
+                                '#20D3B3',
+                                '#94A3B8',
+                                '#F0526D'
+                            ],
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    color: labelColor,
+                                    usePointStyle: true,
+                                    pointStyle: 'circle',
+                                    padding: 18,
+                                    font: { weight: '600' }
+                                }
+                            }
+                        },
+                        scales: {
+                            r: {
+                                grid: { color: gridColor },
+                                ticks: {
+                                    backdropColor: 'transparent',
+                                    color: labelColor
+                                },
+                                pointLabels: {
+                                    color: labelColor,
+                                    font: { size: 12, weight: '600' }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            animateCounters();
+        });
+    </script>
 </x-app-layout>

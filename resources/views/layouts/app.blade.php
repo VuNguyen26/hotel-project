@@ -18,10 +18,10 @@
         <div class="min-h-screen bg-slate-100">
             @livewire('navigation-menu')
 
-            <div class="lg:pl-72">
+            <div class="lg:pl-64">
                 <div class="pt-16">
                     @isset($header)
-                        <header class="border-b border-slate-200 bg-white/80 backdrop-blur">
+                        <header class="border-b border-slate-200 bg-white/85 backdrop-blur">
                             <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
                                 {{ $header }}
                             </div>

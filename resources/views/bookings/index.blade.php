@@ -166,7 +166,7 @@
                                             <td class="border-b border-slate-100 px-4 py-4 align-top">
                                                 <div class="action-stack">
                                                     @if($booking->status === 'pending')
-                                                        <form action="{{ route('bookings.update-status', $booking->id) }}" method="POST">
+                                                        <form action="{{ route('bookings.update-status', $booking->id) }}" method="POST" class="action-form">
                                                             @csrf
                                                             @method('PATCH')
                                                             <input type="hidden" name="status" value="confirmed">
@@ -175,7 +175,7 @@
                                                             </button>
                                                         </form>
 
-                                                        <form action="{{ route('bookings.update-status', $booking->id) }}" method="POST">
+                                                        <form action="{{ route('bookings.update-status', $booking->id) }}" method="POST" class="action-form">
                                                             @csrf
                                                             @method('PATCH')
                                                             <input type="hidden" name="status" value="cancelled">
@@ -183,8 +183,9 @@
                                                                 Hủy
                                                             </button>
                                                         </form>
+
                                                     @elseif($booking->status === 'confirmed')
-                                                        <form action="{{ route('bookings.update-status', $booking->id) }}" method="POST">
+                                                        <form action="{{ route('bookings.update-status', $booking->id) }}" method="POST" class="action-form">
                                                             @csrf
                                                             @method('PATCH')
                                                             <input type="hidden" name="status" value="checked_in">
@@ -193,16 +194,17 @@
                                                             </button>
                                                         </form>
 
-                                                        <form action="{{ route('bookings.update-status', $booking->id) }}" method="POST">
+                                                        <form action="{{ route('bookings.update-status', $booking->id) }}" method="POST" class="action-form">
                                                             @csrf
                                                             @method('PATCH')
                                                             <input type="hidden" name="status" value="cancelled">
-                                                            <button type="submit" class="rounded-lg bg-rose-600 px-3 py-2 text-xs font-semibold text-white hover:bg-rose-700">
+                                                            <button type="submit" class="action-btn-sm bg-rose-600 hover:bg-rose-700">
                                                                 Hủy
                                                             </button>
                                                         </form>
+
                                                     @elseif($booking->status === 'checked_in')
-                                                        <form action="{{ route('bookings.update-status', $booking->id) }}" method="POST">
+                                                        <form action="{{ route('bookings.update-status', $booking->id) }}" method="POST" class="action-form">
                                                             @csrf
                                                             @method('PATCH')
                                                             <input type="hidden" name="status" value="checked_out">
@@ -210,6 +212,7 @@
                                                                 Check-out
                                                             </button>
                                                         </form>
+
                                                     @else
                                                         <span class="text-xs text-slate-400">Không có</span>
                                                     @endif
@@ -231,12 +234,13 @@
                                                     </a>
 
                                                     <form action="{{ route('bookings.destroy', $booking->id) }}"
-                                                          method="POST"
-                                                          onsubmit="return confirm('Bạn có chắc muốn xóa đặt phòng này không?');">
+                                                        method="POST"
+                                                        class="action-form"
+                                                        onsubmit="return confirm('Bạn có chắc muốn xóa đặt phòng này không?');">
                                                         @csrf
                                                         @method('DELETE')
                                                         <button type="submit"
-                                                                class="action-btn-sm bg-rose-600 hover:bg-rose-700">
+                                                                class="w-full rounded-lg bg-rose-600 px-3 py-2 text-center text-xs font-semibold leading-none text-white hover:bg-rose-700">
                                                             Xóa
                                                         </button>
                                                     </form>
