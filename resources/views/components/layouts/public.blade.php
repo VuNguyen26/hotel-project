@@ -100,11 +100,118 @@
         }
 
         .nav-btn-hover {
-            transition: transform .25s ease, box-shadow .25s ease, background-color .25s ease, border-color .25s ease;
+            transition: transform .25s ease, box-shadow .25s ease, background-color .25s ease, border-color .25s ease, color .25s ease;
         }
 
         .nav-btn-hover:hover {
             transform: translateY(-1px);
+        }
+
+        .nav-actions-wrap {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .nav-btn-soft {
+            position: relative;
+            overflow: hidden;
+            transition: transform .25s ease, box-shadow .25s ease, background-color .25s ease, border-color .25s ease, color .25s ease;
+        }
+
+        .nav-btn-soft:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 14px 28px rgba(15, 23, 42, 0.08);
+        }
+
+        .nav-auth-pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 3px;
+            border-radius: 999px;
+            background: linear-gradient(135deg, rgba(23,63,138,0.08), rgba(46,196,182,0.08));
+            border: 1px solid rgba(23,63,138,0.14);
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
+        }
+
+        .nav-auth-pill-link {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 106px;
+            height: 40px;
+            padding: 0 16px;
+            border-radius: 999px;
+            font-size: 0.92rem;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all .25s ease;
+        }
+
+        .nav-auth-pill-link:first-child {
+            color: #173F8A;
+            background: rgba(255,255,255,0.88);
+        }
+
+        .nav-auth-pill-link:last-child {
+            color: white;
+            background: linear-gradient(135deg, #173F8A 0%, #244fb0 100%);
+            box-shadow: 0 10px 20px rgba(23,63,138,0.18);
+        }
+
+        .nav-auth-pill-link:hover {
+            transform: translateY(-1px);
+        }
+
+        .nav-auth-pill-link:first-child:hover {
+            background: #ffffff;
+            color: #143374;
+        }
+
+        .nav-auth-pill-link:last-child:hover {
+            background: linear-gradient(135deg, #143374 0%, #173F8A 100%);
+            box-shadow: 0 14px 26px rgba(23,63,138,0.24);
+        }
+
+        .nav-auth-pill-divider {
+            width: 1px;
+            height: 24px;
+            background: rgba(23,63,138,0.12);
+            border-radius: 999px;
+        }
+
+        .mobile-auth-pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 3px;
+            border-radius: 999px;
+            background: linear-gradient(135deg, rgba(23,63,138,0.08), rgba(46,196,182,0.08));
+            border: 1px solid rgba(23,63,138,0.12);
+        }
+
+        .mobile-auth-pill a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 98px;
+            height: 38px;
+            padding: 0 14px;
+            border-radius: 999px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all .25s ease;
+        }
+
+        .mobile-auth-pill a:first-child {
+            background: #fff;
+            color: #173F8A;
+        }
+
+        .mobile-auth-pill a:last-child {
+            background: #173F8A;
+            color: #fff;
         }
 
         .footer-link {
@@ -114,6 +221,19 @@
         .footer-link:hover {
             color: #ffffff;
             transform: translateX(2px);
+        }
+
+        @media (max-width: 1279px) {
+            .nav-actions-wrap {
+                gap: 0.6rem;
+            }
+
+            .nav-auth-pill-link {
+                min-width: 98px;
+                height: 38px;
+                padding: 0 14px;
+                font-size: 0.88rem;
+            }
         }
     </style>
 </head>
@@ -175,20 +295,53 @@
                     </a>
                 </nav>
 
-                <div class="flex items-center gap-3">
+                <div class="nav-actions-wrap">
                     <a
                         href="{{ route('public.bookings.lookup') }}"
-                        class="nav-btn-hover hidden rounded-full border border-[#173F8A]/20 px-4 py-2.5 text-sm font-semibold text-[#173F8A] hover:border-[#173F8A]/35 hover:bg-[#173F8A]/5 md:inline-flex"
+                        class="nav-btn-soft hidden rounded-full border border-[#173F8A]/18 bg-white px-5 py-2.5 text-sm font-semibold text-[#173F8A] hover:border-[#173F8A]/30 hover:bg-[#173F8A]/[0.04] xl:inline-flex"
                     >
                         Tra cứu booking
                     </a>
 
                     <a
                         href="{{ route('public.rooms.index') }}"
-                        class="nav-btn-hover inline-flex rounded-full bg-[#173F8A] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#143374] hover:shadow-[0_12px_28px_rgba(23,63,138,0.2)]"
+                        class="nav-btn-soft hidden rounded-full bg-[#173F8A] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#143374] hover:shadow-[0_14px_30px_rgba(23,63,138,0.22)] xl:inline-flex"
                     >
                         Đặt phòng ngay
                     </a>
+
+                    @auth
+                        @if (auth()->user()->usertype === 'admin')
+                            <a
+                                href="{{ route('dashboard') }}"
+                                class="nav-btn-soft hidden rounded-full border border-[#173F8A]/18 bg-white px-5 py-2.5 text-sm font-semibold text-[#173F8A] hover:border-[#173F8A]/30 hover:bg-[#173F8A]/[0.04] xl:inline-flex"
+                            >
+                                Quản trị
+                            </a>
+                        @endif
+
+                        <form method="POST" action="{{ route('logout') }}" class="hidden xl:block">
+                            @csrf
+                            <button
+                                type="submit"
+                                class="nav-btn-soft rounded-full border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 hover:border-slate-400 hover:bg-slate-50"
+                            >
+                                Đăng xuất
+                            </button>
+                        </form>
+                    @else
+                        <div class="nav-auth-pill hidden xl:inline-flex">
+                            <a href="{{ route('login') }}" class="nav-auth-pill-link">
+                                Đăng nhập
+                            </a>
+
+                            <span class="nav-auth-pill-divider"></span>
+
+                            <a href="{{ route('register') }}" class="nav-auth-pill-link">
+                                Đăng ký
+                            </a>
+                        </div>
+                    @endauth
                 </div>
             </div>
 
@@ -199,6 +352,29 @@
                 <a href="{{ route('public.news.index') }}" class="nav-btn-hover whitespace-nowrap rounded-full border px-4 py-2 text-sm font-semibold transition {{ $mobileNavLink($isNews) }}">Cẩm nang</a>
                 <a href="{{ route('public.contact') }}" class="nav-btn-hover whitespace-nowrap rounded-full border px-4 py-2 text-sm font-semibold transition {{ $mobileNavLink($isContact) }}">Liên hệ</a>
                 <a href="{{ route('public.bookings.lookup') }}" class="nav-btn-hover whitespace-nowrap rounded-full border px-4 py-2 text-sm font-semibold transition {{ $mobileNavLink($isLookup) }}">Tra cứu</a>
+                <a href="{{ route('public.rooms.index') }}" class="nav-btn-hover whitespace-nowrap rounded-full border border-[#173F8A] bg-[#173F8A] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#143374]">Đặt phòng</a>
+
+                @auth
+                    @if (auth()->user()->usertype === 'admin')
+                        <a href="{{ route('dashboard') }}"
+                           class="nav-btn-hover whitespace-nowrap rounded-full border border-[#173F8A] bg-[#173F8A] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#143374]">
+                            Quản trị
+                        </a>
+                    @endif
+
+                    <form method="POST" action="{{ route('logout') }}" class="inline-block">
+                        @csrf
+                        <button type="submit"
+                                class="nav-btn-hover whitespace-nowrap rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#173F8A]/30 hover:text-[#173F8A]">
+                            Đăng xuất
+                        </button>
+                    </form>
+                @else
+                    <div class="mobile-auth-pill">
+                        <a href="{{ route('login') }}">Đăng nhập</a>
+                        <a href="{{ route('register') }}">Đăng ký</a>
+                    </div>
+                @endauth
             </div>
         </div>
     </header>
