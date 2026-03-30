@@ -83,6 +83,18 @@
                     @endif
                     Thanh toán
                 </a>
+
+                <a href="{{ route('contact-messages.index') }}"
+                    class="group relative block rounded-2xl px-4 py-3 text-sm font-semibold transition
+                    {{ request()->routeIs('contact-messages.*')
+                            ? 'bg-white/10 text-white shadow-sm'
+                            : 'text-white/80 hover:bg-white/6 hover:text-white' }}">
+                        @if(request()->routeIs('contact-messages.*'))
+                            <span class="absolute inset-y-2 left-0 w-1 rounded-r-full bg-[#20D3B3]"></span>
+                        @endif
+                        Liên hệ khách hàng
+                    </a>
+
             </div>
 
             <div class="mt-8 rounded-3xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
@@ -234,6 +246,11 @@
                 <a href="{{ route('payments.index') }}"
                    class="block rounded-2xl px-4 py-3 text-sm font-semibold transition {{ request()->routeIs('payments.*') ? 'bg-white/10 text-white' : 'text-white/80 hover:bg-white/6 hover:text-white' }}">
                     Thanh toán
+                </a>
+
+                <a href="{{ route('contact-messages.index') }}"
+                    class="block rounded-2xl px-4 py-3 text-sm font-semibold transition {{ request()->routeIs('contact-messages.*') ? 'bg-white/10 text-white' : 'text-white/80 hover:bg-white/6 hover:text-white' }}">
+                    Liên hệ khách hàng
                 </a>
             </div>
 

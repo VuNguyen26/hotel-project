@@ -37,8 +37,8 @@
     ];
 
     $heroStats = [
-        ['label' => 'Hỗ trợ', 'value' => 'Thông tin rõ ràng'],
-        ['label' => 'Mục tiêu', 'value' => 'Tăng độ tin cậy'],
+        ['label' => 'Hỗ trợ', 'value' => 'Thông tin + biểu mẫu thật'],
+        ['label' => 'Mục tiêu', 'value' => 'Tin cậy + SEO địa phương'],
         ['label' => 'Trải nghiệm', 'value' => 'Nhanh · Gọn · Liền mạch'],
     ];
 
@@ -48,20 +48,26 @@
             'desc' => 'Cung cấp đầy đủ thông tin để người dùng có thể gọi điện, gửi email hoặc tìm đường dễ dàng hơn.',
         ],
         [
-            'title' => 'Tăng độ tin cậy',
-            'desc' => 'Một trang liên hệ rõ ràng giúp website tạo cảm giác chỉn chu và chuyên nghiệp hơn trong mắt khách hàng.',
+            'title' => 'Biểu mẫu thật',
+            'desc' => 'Tin nhắn gửi từ trang liên hệ sẽ được lưu vào hệ thống để bộ phận vận hành tiếp nhận và theo dõi.',
         ],
         [
-            'title' => 'Hỗ trợ hành trình đặt phòng',
-            'desc' => 'Người dùng có thể quay lại xem phòng hoặc tra cứu booking ngay từ trang liên hệ khi cần hỗ trợ thêm.',
+            'title' => 'Tăng độ tin cậy',
+            'desc' => 'Google Map, social links và structured data giúp website đầy đủ hơn cả về trải nghiệm lẫn SEO địa phương.',
         ],
     ];
+
+    $mapEmbedUrl = 'https://www.google.com/maps?q=' . urlencode($contactInfo['map_query']) . '&z=15&output=embed';
 @endphp
 
 <x-layouts.public 
     title="Liên hệ | Navara Boutique Hotel"
     metaDescription="Thông tin liên hệ, hỗ trợ cơ bản và giải đáp nhanh cho khách hàng khi sử dụng website Navara Boutique Hotel."
 >
+    <script type="application/ld+json">
+        {!! json_encode($localBusinessSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}
+    </script>
+
     <style>
         :root {
             --navara-navy: #173F8A;
@@ -79,50 +85,24 @@
         }
 
         @keyframes fadeUpSoft {
-            0% {
-                opacity: 0;
-                transform: translateY(28px);
-            }
-            100% {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            0% { opacity: 0; transform: translateY(28px); }
+            100% { opacity: 1; transform: translateY(0); }
         }
 
         @keyframes fadeLeftSoft {
-            0% {
-                opacity: 0;
-                transform: translateX(-28px);
-            }
-            100% {
-                opacity: 1;
-                transform: translateX(0);
-            }
+            0% { opacity: 0; transform: translateX(-28px); }
+            100% { opacity: 1; transform: translateX(0); }
         }
 
         @keyframes fadeRightSoft {
-            0% {
-                opacity: 0;
-                transform: translateX(28px);
-            }
-            100% {
-                opacity: 1;
-                transform: translateX(0);
-            }
+            0% { opacity: 0; transform: translateX(28px); }
+            100% { opacity: 1; transform: translateX(0); }
         }
 
         @keyframes shineSweep {
-            0% {
-                transform: translateX(-130%) skewX(-18deg);
-                opacity: 0;
-            }
-            20% {
-                opacity: .22;
-            }
-            100% {
-                transform: translateX(220%) skewX(-18deg);
-                opacity: 0;
-            }
+            0% { transform: translateX(-130%) skewX(-18deg); opacity: 0; }
+            20% { opacity: .22; }
+            100% { transform: translateX(220%) skewX(-18deg); opacity: 0; }
         }
 
         .contact-shell-card {
@@ -132,6 +112,38 @@
 
         .contact-floating-orb {
             animation: floatSoft 7s ease-in-out infinite;
+        }
+
+        .contact-input,
+        .contact-textarea {
+            width: 100%;
+            border-radius: 1rem;
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            background: #fff;
+            padding: 0.875rem 1rem;
+            font-size: 0.95rem;
+            color: #0f172a;
+            transition: .2s ease;
+        }
+
+        .contact-textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        .contact-input:focus,
+        .contact-textarea:focus {
+            outline: none;
+            border-color: rgba(23, 63, 138, 0.7);
+            box-shadow: 0 0 0 4px rgba(23, 63, 138, 0.08);
+        }
+
+        .contact-label {
+            display: block;
+            margin-bottom: .55rem;
+            font-size: .92rem;
+            font-weight: 700;
+            color: #334155;
         }
 
         .contact-hero {
@@ -286,15 +298,15 @@
                     </h1>
 
                     <p class="mt-6 max-w-2xl text-base leading-8 text-slate-200 sm:text-lg">
-                        Trang liên hệ giúp website đầy đủ hơn về mặt trải nghiệm, tăng cảm giác tin cậy và tạo thêm điểm chạm rõ ràng để khách hàng tìm hiểu hoặc cần hỗ trợ khi sử dụng website.
+                        Trang liên hệ giờ không chỉ là khu vực thông tin cơ bản mà đã có biểu mẫu gửi thật, bản đồ định vị, social links và structured data để hỗ trợ tốt hơn cho cả người dùng lẫn SEO địa phương.
                     </p>
 
                     <div class="mt-8 flex flex-wrap gap-3">
                         <a
-                            href="{{ route('public.rooms.index') }}"
+                            href="#contact-form"
                             class="nav-btn-hover inline-flex rounded-full bg-[#2EC4B6] px-6 py-3 text-sm font-semibold text-[#081A45] hover:bg-[#27B0A3]"
                         >
-                            Xem phòng nghỉ
+                            Gửi liên hệ ngay
                         </a>
 
                         <a
@@ -310,15 +322,15 @@
                     <div class="contact-hero-inner-card rounded-[1.75rem] p-6 text-slate-900 sm:p-7">
                         <div class="flex flex-wrap items-start justify-between gap-4">
                             <div>
-                                <p class="text-sm font-semibold uppercase tracking-[0.2em] text-[#173F8A]">Hỗ trợ cơ bản</p>
+                                <p class="text-sm font-semibold uppercase tracking-[0.2em] text-[#173F8A]">Liên hệ thực tế</p>
                                 <h2 class="mt-3 text-2xl font-black tracking-tight text-slate-900">
-                                    Mọi thông tin cần thiết được gom lại rõ ràng
+                                    Mọi thông tin hỗ trợ được gom lại rõ ràng và sẵn sàng sử dụng
                                 </h2>
                             </div>
 
                             <div class="rounded-2xl bg-slate-100 px-4 py-3 text-right">
                                 <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Ưu tiên</p>
-                                <p class="mt-2 text-sm font-bold text-slate-900">Nhanh · Rõ · Dễ tìm</p>
+                                <p class="mt-2 text-sm font-bold text-slate-900">Nhanh · Rõ · Dễ tiếp cận</p>
                             </div>
                         </div>
 
@@ -332,7 +344,7 @@
                         </div>
 
                         <div class="mt-6 rounded-[1.5rem] border border-slate-200 bg-slate-50 p-4 text-sm leading-7 text-slate-700">
-                            Không chỉ đóng vai trò thông tin, trang liên hệ còn giúp website hoàn chỉnh hơn về độ tin cậy thương hiệu và khả năng mở rộng SEO địa phương trong các giai đoạn tiếp theo.
+                            Thông tin hiển thị trên trang và structured data JSON-LD được giữ đồng nhất để tăng độ tin cậy và hỗ trợ máy tìm kiếm hiểu rõ hơn về doanh nghiệp địa phương.
                         </div>
                     </div>
                 </div>
@@ -341,7 +353,7 @@
     </section>
 
     <section class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
-        <div class="grid gap-10 lg:grid-cols-[0.95fr_1.05fr]">
+        <div class="grid gap-10 xl:grid-cols-[0.95fr_1.05fr]">
             <div class="space-y-6">
                 <div class="reveal-on-scroll reveal-delay-1 contact-shell-card overflow-hidden rounded-[2rem] bg-white">
                     <div class="relative min-h-[280px] overflow-hidden">
@@ -371,25 +383,33 @@
                     </div>
                 </div>
 
-                <div class="reveal-on-scroll reveal-delay-2 contact-shell-card rounded-[2rem] border border-[#173F8A]/10 bg-[linear-gradient(135deg,rgba(23,63,138,0.05),rgba(46,196,182,0.08))] p-6 sm:p-7">
-                    <h3 class="text-2xl font-black text-slate-900">Bạn có thể bắt đầu từ đây</h3>
-                    <p class="mt-4 text-sm leading-7 text-slate-600">
-                        Nếu đang tìm phòng hoặc cần kiểm tra lại thông tin booking, anh có thể đi nhanh tới đúng khu vực ngay bên dưới.
-                    </p>
+                <div class="reveal-on-scroll reveal-delay-2 contact-shell-card overflow-hidden rounded-[2rem] bg-white">
+                    <div class="aspect-[16/10] w-full">
+                        <iframe
+                            src="{{ $mapEmbedUrl }}"
+                            class="h-full w-full border-0"
+                            loading="lazy"
+                            referrerpolicy="no-referrer-when-downgrade"
+                            allowfullscreen
+                            title="Bản đồ vị trí {{ $contactInfo['business_name'] }}"
+                        ></iframe>
+                    </div>
+                </div>
 
-                    <div class="mt-6 flex flex-wrap gap-4">
-                        <a
-                            href="{{ route('public.rooms.index') }}"
-                            class="nav-btn-hover rounded-full bg-[#173F8A] px-6 py-3 text-sm font-semibold text-white hover:bg-[#143374]"
-                        >
-                            Xem phòng
-                        </a>
-                        <a
-                            href="{{ route('public.bookings.lookup') }}"
-                            class="nav-btn-hover rounded-full border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-100"
-                        >
-                            Tra cứu booking
-                        </a>
+                <div class="reveal-on-scroll reveal-delay-2 contact-shell-card rounded-[2rem] bg-white p-6 sm:p-7">
+                    <h3 class="text-2xl font-black text-slate-900">Kết nối qua mạng xã hội</h3>
+                    <div class="mt-5 grid gap-3">
+                        @foreach($socialLinks as $social)
+                            <a
+                                href="{{ $social['url'] }}"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="nav-btn-hover inline-flex items-center justify-between rounded-[1.2rem] border border-slate-200 bg-slate-50 px-4 py-4 text-sm font-semibold text-slate-700 hover:border-[#173F8A]/20 hover:bg-white hover:text-[#173F8A]"
+                            >
+                                <span>{{ $social['label'] }}</span>
+                                <span class="text-slate-500">{{ $social['handle'] }}</span>
+                            </a>
+                        @endforeach
                     </div>
                 </div>
 
@@ -403,24 +423,135 @@
                 </div>
             </div>
 
-            <div class="reveal-on-scroll reveal-delay-1 contact-shell-card rounded-[2rem] bg-white p-6 shadow-sm sm:p-8">
-                <h2 class="text-2xl font-black text-slate-900">Câu hỏi thường gặp</h2>
+            <div class="space-y-6">
+                @if(session('contact_success'))
+                    <div class="contact-shell-card rounded-[2rem] border border-emerald-200 bg-emerald-50 p-6 text-emerald-800">
+                        <p class="text-base font-bold">{{ session('contact_success') }}</p>
+                    </div>
+                @endif
 
-                <div class="mt-8 space-y-4">
-                    @foreach($faqs as $faq)
-                        <details class="group rounded-[1.8rem] border border-slate-200 bg-slate-50 p-5">
-                            <summary class="cursor-pointer list-none text-lg font-black text-slate-900">
-                                {{ $faq['q'] }}
-                            </summary>
-                            <p class="mt-4 text-sm leading-7 text-slate-600">
-                                {{ $faq['a'] }}
-                            </p>
-                        </details>
-                    @endforeach
+                @if($errors->any())
+                    <div class="contact-shell-card rounded-[2rem] border border-rose-200 bg-rose-50 p-6 text-rose-700">
+                        <p class="text-base font-bold">Vui lòng kiểm tra lại thông tin đã nhập.</p>
+                        <ul class="mt-3 list-disc space-y-1.5 pl-5 text-sm">
+                            @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
+                <div id="contact-form" class="reveal-on-scroll reveal-delay-1 contact-shell-card rounded-[2rem] bg-white p-6 sm:p-8">
+                    <h2 class="text-2xl font-black text-slate-900">Gửi yêu cầu liên hệ</h2>
+                    <p class="mt-4 text-sm leading-7 text-slate-600">
+                        Anh có thể gửi thắc mắc, nhu cầu hỗ trợ hoặc nội dung cần tư vấn trực tiếp từ biểu mẫu này.
+                    </p>
+
+                    <form method="POST" action="{{ route('public.contact.store') }}" class="mt-8 space-y-5">
+                        @csrf
+
+                        <div class="grid gap-5 md:grid-cols-2">
+                            <div class="md:col-span-2">
+                                <label class="contact-label">
+                                    Họ và tên <span class="text-rose-500">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    name="full_name"
+                                    value="{{ old('full_name') }}"
+                                    class="contact-input"
+                                    placeholder="Nhập họ và tên của anh"
+                                >
+                            </div>
+
+                            <div>
+                                <label class="contact-label">Số điện thoại</label>
+                                <input
+                                    type="text"
+                                    name="phone"
+                                    value="{{ old('phone') }}"
+                                    class="contact-input"
+                                    placeholder="Nhập số điện thoại"
+                                >
+                            </div>
+
+                            <div>
+                                <label class="contact-label">Email</label>
+                                <input
+                                    type="email"
+                                    name="email"
+                                    value="{{ old('email') }}"
+                                    class="contact-input"
+                                    placeholder="Nhập email"
+                                >
+                            </div>
+
+                            <div class="md:col-span-2">
+                                <label class="contact-label">
+                                    Chủ đề <span class="text-rose-500">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    name="subject"
+                                    value="{{ old('subject') }}"
+                                    class="contact-input"
+                                    placeholder="Ví dụ: Tư vấn đặt phòng, hỗ trợ booking, hỏi thông tin..."
+                                >
+                            </div>
+
+                            <div class="md:col-span-2">
+                                <label class="contact-label">
+                                    Nội dung liên hệ <span class="text-rose-500">*</span>
+                                </label>
+                                <textarea
+                                    name="message"
+                                    class="contact-textarea"
+                                    placeholder="Nhập nội dung anh cần hỗ trợ..."
+                                >{{ old('message') }}</textarea>
+                            </div>
+                        </div>
+
+                        <div class="rounded-[1.5rem] border border-slate-200 bg-slate-50 p-4 text-sm leading-7 text-slate-700">
+                            Anh chỉ cần nhập <strong>họ tên</strong>, <strong>chủ đề</strong>, <strong>nội dung</strong> và ít nhất một cách liên hệ gồm <strong>số điện thoại</strong> hoặc <strong>email</strong>.
+                        </div>
+
+                        <div class="flex flex-wrap gap-4">
+                            <button
+                                type="submit"
+                                class="nav-btn-hover inline-flex rounded-full bg-[#173F8A] px-6 py-3 text-sm font-semibold text-white hover:bg-[#143374]"
+                            >
+                                Gửi liên hệ
+                            </button>
+
+                            <a
+                                href="{{ route('public.rooms.index') }}"
+                                class="nav-btn-hover inline-flex rounded-full border border-slate-200 px-6 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-100"
+                            >
+                                Xem phòng nghỉ
+                            </a>
+                        </div>
+                    </form>
                 </div>
 
-                <div class="mt-8 rounded-[1.8rem] border border-dashed border-slate-300 bg-slate-50 p-6 text-sm leading-7 text-slate-600">
-                    Trang liên hệ hiện đóng vai trò như một khu vực hỗ trợ cơ bản để hoàn thiện trải nghiệm website. Ở giai đoạn tiếp theo, anh có thể nâng cấp thêm form gửi liên hệ thật, Google Map nhúng, social links và schema LocalBusiness để tăng hiệu quả SEO địa phương.
+                <div class="reveal-on-scroll reveal-delay-2 contact-shell-card rounded-[2rem] bg-white p-6 shadow-sm sm:p-8">
+                    <h2 class="text-2xl font-black text-slate-900">Câu hỏi thường gặp</h2>
+
+                    <div class="mt-8 space-y-4">
+                        @foreach($faqs as $faq)
+                            <details class="group rounded-[1.8rem] border border-slate-200 bg-slate-50 p-5">
+                                <summary class="cursor-pointer list-none text-lg font-black text-slate-900">
+                                    {{ $faq['q'] }}
+                                </summary>
+                                <p class="mt-4 text-sm leading-7 text-slate-600">
+                                    {{ $faq['a'] }}
+                                </p>
+                            </details>
+                        @endforeach
+                    </div>
+
+                    <div class="mt-8 rounded-[1.8rem] border border-dashed border-slate-300 bg-slate-50 p-6 text-sm leading-7 text-slate-600">
+                        Trang liên hệ hiện đã có đủ các phần cốt lõi cho một website khách sạn thực tế: thông tin liên hệ, form gửi thật, bản đồ nhúng, social links và LocalBusiness/Hotel schema để tăng hiệu quả SEO địa phương.
+                    </div>
                 </div>
             </div>
         </div>
