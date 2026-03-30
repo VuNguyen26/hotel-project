@@ -241,11 +241,11 @@
     <div class="border-b border-white/10 bg-[#173F8A] text-slate-100">
         <div class="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-2.5 text-xs sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
             <div class="flex flex-wrap items-center gap-3">
-                <span>123 Đường Trung Tâm, Quận 1, TP.HCM</span>
+                <span>20/2 Đường số 9, Quận Thủ Đức, TP.HCM</span>
                 <span class="hidden sm:inline text-white/30">•</span>
-                <a href="tel:0909000001" class="hover:text-white">0909 000 001</a>
+                <a href="tel:0968830591" class="hover:text-white">0968 830 591</a>
                 <span class="hidden sm:inline text-white/30">•</span>
-                <a href="mailto:booking@hotel.test" class="hover:text-white">booking@hotel.test</a>
+                <a href="mailto:nguyenminhvu591@gmail.com" class="hover:text-white">nguyenminhvu591@gmail.com</a>
             </div>
 
             <div class="flex flex-wrap items-center gap-3 text-slate-200">
@@ -439,9 +439,9 @@
             <div>
                 <h4 class="text-sm font-bold uppercase tracking-[0.22em] text-white/70">Liên hệ</h4>
                 <div class="mt-5 space-y-3 text-sm text-slate-200">
-                    <p>123 Đường Trung Tâm, Quận 1, TP.HCM</p>
-                    <p><a href="tel:0909000001" class="footer-link inline-block text-slate-200">0909 000 001</a></p>
-                    <p><a href="mailto:booking@hotel.test" class="footer-link inline-block text-slate-200">booking@hotel.test</a></p>
+                    <p>20/2 Đường số 9, Quận Thủ Đức, TP.HCM</p>
+                    <p><a href="tel:0968830591" class="footer-link inline-block text-slate-200">0968 830 591</a></p>
+                    <p><a href="mailto:nguyenminhvu591@gmail.com" class="footer-link inline-block text-slate-200">nguyenminhvu591@gmail.com</a></p>
                     <p>Luôn sẵn sàng hỗ trợ đặt phòng và giải đáp thông tin lưu trú.</p>
                 </div>
             </div>

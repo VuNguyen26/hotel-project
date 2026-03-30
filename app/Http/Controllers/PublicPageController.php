@@ -124,9 +124,9 @@ class PublicPageController extends Controller
     public function contact()
     {
         $contactInfo = [
-            'address' => '123 Đường Trung Tâm, Quận 1, TP.HCM',
-            'phone' => '0909 000 001',
-            'email' => 'booking@hotel.test',
+            'address' => '20/2 Đường số 9, Quận Thủ Đức, TP.HCM',
+            'phone' => '0968 830 591',
+            'email' => 'nguyenminhvu591@gmail.com',
             'hours' => 'Hỗ trợ thông tin cơ bản 24/7',
         ];
 
