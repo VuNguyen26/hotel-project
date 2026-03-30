@@ -7,6 +7,9 @@
     $isHome = request()->routeIs('home');
     $isRooms = request()->routeIs('public.rooms.*');
     $isLookup = request()->routeIs('public.bookings.lookup') || request()->routeIs('public.bookings.lookup.submit');
+    $isAbout = request()->routeIs('public.about');
+    $isNews = request()->routeIs('public.news.*');
+    $isContact = request()->routeIs('public.contact');
 @endphp
 
 <!DOCTYPE html>
@@ -46,7 +49,7 @@
                         Hotel Booking
                     </a>
 
-                    <nav class="hidden items-center gap-2 lg:flex">
+                    <nav class="hidden items-center gap-2 xl:flex">
                         <a
                             href="{{ route('home') }}"
                             class="rounded-xl px-4 py-2 text-sm font-semibold transition {{ $isHome ? 'bg-slate-900 text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-sky-600' }}"
@@ -62,24 +65,24 @@
                         </a>
 
                         <a
-                            href="{{ route('home') }}#offers"
-                            class="rounded-xl px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 hover:text-sky-600"
+                            href="{{ route('public.about') }}"
+                            class="rounded-xl px-4 py-2 text-sm font-semibold transition {{ $isAbout ? 'bg-slate-900 text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-sky-600' }}"
                         >
-                            Ưu đãi
+                            Giới thiệu
                         </a>
 
                         <a
-                            href="{{ route('home') }}#reviews"
-                            class="rounded-xl px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 hover:text-sky-600"
+                            href="{{ route('public.news.index') }}"
+                            class="rounded-xl px-4 py-2 text-sm font-semibold transition {{ $isNews ? 'bg-slate-900 text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-sky-600' }}"
                         >
-                            Đánh giá
+                            Tin tức
                         </a>
 
                         <a
-                            href="{{ route('home') }}#faq"
-                            class="rounded-xl px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 hover:text-sky-600"
+                            href="{{ route('public.contact') }}"
+                            class="rounded-xl px-4 py-2 text-sm font-semibold transition {{ $isContact ? 'bg-slate-900 text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-sky-600' }}"
                         >
-                            FAQ
+                            Liên hệ
                         </a>
 
                         <a
@@ -108,27 +111,13 @@
                 </div>
             </div>
 
-            <div class="mt-4 flex gap-2 overflow-x-auto pb-1 lg:hidden">
-                <a
-                    href="{{ route('home') }}"
-                    class="whitespace-nowrap rounded-xl px-4 py-2 text-sm font-semibold transition {{ $isHome ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-700' }}"
-                >
-                    Trang chủ
-                </a>
-
-                <a
-                    href="{{ route('public.rooms.index') }}"
-                    class="whitespace-nowrap rounded-xl px-4 py-2 text-sm font-semibold transition {{ $isRooms ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-700' }}"
-                >
-                    Phòng
-                </a>
-
-                <a
-                    href="{{ route('public.bookings.lookup') }}"
-                    class="whitespace-nowrap rounded-xl px-4 py-2 text-sm font-semibold transition {{ $isLookup ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-700' }}"
-                >
-                    Tra cứu booking
-                </a>
+            <div class="mt-4 flex gap-2 overflow-x-auto pb-1 xl:hidden">
+                <a href="{{ route('home') }}" class="whitespace-nowrap rounded-xl px-4 py-2 text-sm font-semibold transition {{ $isHome ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-700' }}">Trang chủ</a>
+                <a href="{{ route('public.rooms.index') }}" class="whitespace-nowrap rounded-xl px-4 py-2 text-sm font-semibold transition {{ $isRooms ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-700' }}">Phòng</a>
+                <a href="{{ route('public.about') }}" class="whitespace-nowrap rounded-xl px-4 py-2 text-sm font-semibold transition {{ $isAbout ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-700' }}">Giới thiệu</a>
+                <a href="{{ route('public.news.index') }}" class="whitespace-nowrap rounded-xl px-4 py-2 text-sm font-semibold transition {{ $isNews ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-700' }}">Tin tức</a>
+                <a href="{{ route('public.contact') }}" class="whitespace-nowrap rounded-xl px-4 py-2 text-sm font-semibold transition {{ $isContact ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-700' }}">Liên hệ</a>
+                <a href="{{ route('public.bookings.lookup') }}" class="whitespace-nowrap rounded-xl px-4 py-2 text-sm font-semibold transition {{ $isLookup ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-700' }}">Tra cứu booking</a>
             </div>
         </div>
     </header>
@@ -151,8 +140,8 @@
                 <div class="mt-4 space-y-3 text-sm">
                     <a href="{{ route('home') }}" class="block text-slate-600 hover:text-sky-600">Trang chủ</a>
                     <a href="{{ route('public.rooms.index') }}" class="block text-slate-600 hover:text-sky-600">Danh sách phòng</a>
-                    <a href="{{ route('home') }}#offers" class="block text-slate-600 hover:text-sky-600">Ưu đãi</a>
-                    <a href="{{ route('home') }}#faq" class="block text-slate-600 hover:text-sky-600">Câu hỏi thường gặp</a>
+                    <a href="{{ route('public.about') }}" class="block text-slate-600 hover:text-sky-600">Giới thiệu</a>
+                    <a href="{{ route('public.news.index') }}" class="block text-slate-600 hover:text-sky-600">Tin tức</a>
                 </div>
             </div>
 
@@ -160,8 +149,7 @@
                 <h4 class="text-sm font-bold uppercase tracking-[0.2em] text-slate-500">Hỗ trợ khách hàng</h4>
                 <div class="mt-4 space-y-3 text-sm">
                     <a href="{{ route('public.bookings.lookup') }}" class="block text-slate-600 hover:text-sky-600">Tra cứu booking</a>
-                    <a href="{{ route('home') }}#reviews" class="block text-slate-600 hover:text-sky-600">Đánh giá khách hàng</a>
-                    <a href="{{ route('home') }}#news" class="block text-slate-600 hover:text-sky-600">Tin tức & cẩm nang</a>
+                    <a href="{{ route('public.contact') }}" class="block text-slate-600 hover:text-sky-600">Liên hệ</a>
                     <a href="{{ route('login') }}" class="block text-slate-600 hover:text-sky-600">Khu vực admin</a>
                 </div>
             </div>

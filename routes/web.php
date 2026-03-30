@@ -10,6 +10,7 @@ use App\Http\Controllers\BookingController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PublicBookingController;
+use App\Http\Controllers\PublicPageController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/our-rooms', [PublicRoomController::class, 'index'])->name('public.rooms.index');
@@ -19,6 +20,11 @@ Route::post('/our-rooms/{room}/book', [PublicBookingController::class, 'store'])
 Route::get('/booking-success', [PublicBookingController::class, 'success'])->name('public.bookings.success');
 Route::get('/booking-lookup', [PublicBookingController::class, 'lookupForm'])->name('public.bookings.lookup');
 Route::post('/booking-lookup', [PublicBookingController::class, 'lookupResult'])->name('public.bookings.lookup.submit');
+
+Route::get('/about', [PublicPageController::class, 'about'])->name('public.about');
+Route::get('/news', [PublicPageController::class, 'news'])->name('public.news.index');
+Route::get('/news/{slug}', [PublicPageController::class, 'newsShow'])->name('public.news.show');
+Route::get('/contact', [PublicPageController::class, 'contact'])->name('public.contact');
 Route::middleware([
     'auth:sanctum',
     config('jetstream.auth_session'),
