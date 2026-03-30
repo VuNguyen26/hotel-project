@@ -7,6 +7,11 @@
         return file_exists(public_path($localPath)) ? asset($localPath) : $fallback;
     };
 
+    $heroBackground = $assetOrFallback(
+        'images/user/booking-hero.jpg',
+        'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1800&q=80'
+    );
+
     $displayCheckIn = old('check_in_date', $checkInDate);
     $displayCheckOut = old('check_out_date', $checkOutDate);
 
@@ -22,7 +27,7 @@
 
             if ($previewCheckOut->gt($previewCheckIn)) {
                 $previewNights = max($previewCheckIn->diffInDays($previewCheckOut), 1);
-                $previewTotal = $previewNights * ($room->roomType->price ?? 0);
+                $previewTotal = $previewNights * ($room->roomType?->price ?? 0);
                 $formattedCheckIn = $previewCheckIn->format('d/m/Y');
                 $formattedCheckOut = $previewCheckOut->format('d/m/Y');
             }
@@ -80,6 +85,12 @@
     ];
 
     $contactHint = 'Vui lòng nhập ít nhất số điện thoại hoặc email để hệ thống hỗ trợ tra cứu booking sau này.';
+
+    $heroStats = [
+        ['label' => 'Giá tham khảo', 'value' => number_format($price, 0, ',', '.') . ' đ / đêm'],
+        ['label' => 'Sức chứa', 'value' => $capacity . ' người'],
+        ['label' => 'Diện tích', 'value' => $area],
+    ];
 @endphp
 
 <x-layouts.public
@@ -94,12 +105,45 @@
             --navara-teal-dark: #27B0A3;
             --navara-border: rgba(15, 23, 42, 0.08);
             --navara-shadow-soft: 0 14px 40px rgba(15, 23, 42, 0.06);
-            --navara-shadow-lg: 0 28px 70px rgba(8, 26, 69, 0.14);
+            --navara-shadow-lg: 0 28px 70px rgba(8, 26, 69, 0.16);
         }
 
         @keyframes floatSoft {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-10px); }
+        }
+
+        @keyframes fadeUpSoft {
+            0% {
+                opacity: 0;
+                transform: translateY(28px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeLeftSoft {
+            0% {
+                opacity: 0;
+                transform: translateX(-28px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes fadeRightSoft {
+            0% {
+                opacity: 0;
+                transform: translateX(28px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
 
         .booking-shell-card {
@@ -109,11 +153,6 @@
 
         .booking-floating-orb {
             animation: floatSoft 7s ease-in-out infinite;
-        }
-
-        .booking-side-sticky {
-            position: sticky;
-            top: 6.75rem;
         }
 
         .booking-input {
@@ -146,16 +185,123 @@
             background: rgba(255, 255, 255, 0.88);
             backdrop-filter: blur(6px);
         }
+
+        .booking-hero {
+            position: relative;
+            overflow: hidden;
+            color: white;
+            background-image:
+                linear-gradient(
+                    90deg,
+                    rgba(8, 26, 69, 0.66) 0%,
+                    rgba(8, 26, 69, 0.54) 34%,
+                    rgba(13, 37, 92, 0.42) 68%,
+                    rgba(13, 37, 92, 0.28) 100%
+                ),
+                url('{{ $heroBackground }}');
+            background-size: cover;
+            background-position: center center;
+            background-repeat: no-repeat;
+        }
+
+        .booking-hero::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(circle at top right, rgba(46, 196, 182, 0.12), transparent 24%),
+                linear-gradient(to top, rgba(8, 26, 69, 0.16), rgba(8, 26, 69, 0.02));
+            pointer-events: none;
+        }
+
+        .booking-hero-badge {
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            background: rgba(255, 255, 255, 0.10);
+            backdrop-filter: blur(8px);
+        }
+
+        .booking-hero-panel {
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            background: rgba(9, 26, 64, 0.14);
+            box-shadow: 0 28px 70px rgba(5, 15, 40, 0.18);
+            backdrop-filter: blur(8px);
+        }
+
+        .booking-hero-inner-card {
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            background: rgba(255, 255, 255, 0.82);
+            backdrop-filter: blur(14px);
+            box-shadow: 0 24px 60px rgba(8, 26, 69, 0.16);
+        }
+
+        .booking-type-badge {
+            background: rgba(255, 255, 255, 0.98);
+            color: #0B245B;
+            border: 1px solid rgba(255, 255, 255, 0.95);
+            box-shadow: 0 14px 32px rgba(8, 26, 69, 0.22);
+        }
+
+        .hero-copy-reveal {
+            opacity: 0;
+            animation: fadeLeftSoft .85s cubic-bezier(.22, 1, .36, 1) .08s forwards;
+        }
+
+        .hero-panel-reveal {
+            opacity: 0;
+            animation: fadeRightSoft .9s cubic-bezier(.22, 1, .36, 1) .18s forwards;
+        }
+
+        .hero-stats-reveal {
+            opacity: 0;
+            animation: fadeUpSoft .7s cubic-bezier(.22, 1, .36, 1) forwards;
+        }
+
+        .reveal-on-scroll {
+            opacity: 0;
+            transform: translateY(28px);
+            will-change: transform, opacity;
+        }
+
+        .reveal-on-scroll.is-visible {
+            animation: fadeUpSoft .8s cubic-bezier(.22, 1, .36, 1) forwards;
+        }
+
+        .reveal-delay-1 { animation-delay: .08s !important; }
+        .reveal-delay-2 { animation-delay: .16s !important; }
+        .reveal-delay-3 { animation-delay: .24s !important; }
+        .reveal-delay-4 { animation-delay: .32s !important; }
+
+        .nav-btn-hover {
+            transition: transform .28s ease, box-shadow .28s ease, background-color .28s ease, border-color .28s ease, color .28s ease;
+        }
+
+        .nav-btn-hover:hover {
+            transform: translateY(-2px);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .booking-floating-orb,
+            .hero-copy-reveal,
+            .hero-panel-reveal,
+            .hero-stats-reveal,
+            .reveal-on-scroll,
+            .reveal-on-scroll.is-visible,
+            .nav-btn-hover {
+                animation: none !important;
+                transition: none !important;
+                transform: none !important;
+                opacity: 1 !important;
+            }
+        }
     </style>
 
-    <section class="relative overflow-hidden bg-[#081A45] text-white">
-        <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(46,196,182,0.22),transparent_24%),radial-gradient(circle_at_left,rgba(255,255,255,0.08),transparent_18%)]"></div>
+    <section class="booking-hero min-h-[700px] lg:min-h-[760px]">
         <div class="booking-floating-orb absolute -left-16 top-16 h-40 w-40 rounded-full bg-white/10 blur-3xl"></div>
         <div class="booking-floating-orb absolute right-0 top-24 h-56 w-56 rounded-full bg-[#2EC4B6]/20 blur-3xl"></div>
 
-        <div class="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
+        <div class="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
             <div class="grid items-center gap-10 lg:grid-cols-[1.08fr_0.92fr]">
-                <div>
+                <div class="hero-copy-reveal">
                     <div class="flex flex-wrap items-center gap-3 text-sm text-white/80">
                         <a href="{{ route('home') }}" class="transition hover:text-white">Trang chủ</a>
                         <span class="text-white/35">/</span>
@@ -184,7 +330,7 @@
                     </div>
 
                     <div class="mt-6 flex flex-wrap items-center gap-3">
-                        <span class="rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-[#9ff4ec]">
+                        <span class="booking-hero-badge rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-[0.24em] text-[#9ff4ec]">
                             Gửi yêu cầu đặt phòng
                         </span>
                         <span class="rounded-full px-4 py-2 text-xs font-bold {{ $badgeClasses }}">
@@ -192,7 +338,7 @@
                         </span>
                     </div>
 
-                    <h1 class="mt-6 max-w-3xl text-4xl font-black tracking-tight text-white sm:text-5xl lg:text-[3.5rem] lg:leading-[1.08]">
+                    <h1 class="mt-6 max-w-3xl text-4xl font-black tracking-tight text-white sm:text-5xl lg:text-[3.9rem] lg:leading-[1.04]">
                         Hoàn tất thông tin để gửi yêu cầu đặt phòng {{ $room->room_number }}.
                     </h1>
 
@@ -227,8 +373,8 @@
                     </div>
                 </div>
 
-                <div class="booking-shell-card overflow-hidden rounded-[2rem] border border-white/10 bg-white/10 p-5 backdrop-blur-sm sm:p-6">
-                    <div class="rounded-[1.75rem] border border-white/10 bg-white/95 p-6 text-slate-900 shadow-[0_24px_60px_rgba(8,26,69,0.24)] sm:p-7">
+                <div class="hero-panel-reveal booking-hero-panel overflow-hidden rounded-[2rem] p-4 sm:p-5 lg:p-6">
+                    <div class="booking-hero-inner-card rounded-[1.75rem] p-6 text-slate-900 sm:p-7">
                         <div class="flex flex-wrap items-start justify-between gap-4">
                             <div>
                                 <p class="text-sm font-semibold uppercase tracking-[0.2em] text-[#173F8A]">Phòng đang chọn</p>
@@ -244,18 +390,12 @@
                         </div>
 
                         <div class="mt-6 grid gap-3 sm:grid-cols-3">
-                            <div class="rounded-[1.4rem] border border-slate-200 bg-white p-4">
-                                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Sức chứa</p>
-                                <p class="mt-2 text-lg font-black text-slate-900">{{ $capacity }} người</p>
-                            </div>
-                            <div class="rounded-[1.4rem] border border-slate-200 bg-white p-4">
-                                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Diện tích</p>
-                                <p class="mt-2 text-lg font-black text-slate-900">{{ $area }}</p>
-                            </div>
-                            <div class="rounded-[1.4rem] border border-slate-200 bg-white p-4">
-                                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Bố trí giường</p>
-                                <p class="mt-2 text-lg font-black text-slate-900">{{ $bedInfo }}</p>
-                            </div>
+                            @foreach($heroStats as $stat)
+                                <div class="hero-stats-reveal rounded-[1.4rem] border border-slate-200 bg-white p-4" style="animation-delay: {{ 0.28 + ($loop->index * 0.08) }}s;">
+                                    <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">{{ $stat['label'] }}</p>
+                                    <p class="mt-2 text-lg font-black text-slate-900">{{ $stat['value'] }}</p>
+                                </div>
+                            @endforeach
                         </div>
 
                         <div class="mt-6 rounded-[1.5rem] border border-slate-200 bg-slate-50 p-4 text-sm leading-7 text-slate-700">
@@ -281,7 +421,7 @@
                     </div>
                 @endif
 
-                <div class="booking-shell-card overflow-hidden rounded-[2rem] bg-white">
+                <div class="reveal-on-scroll reveal-delay-1 booking-shell-card overflow-hidden rounded-[2rem] bg-white">
                     <div class="grid gap-0 lg:grid-cols-[0.92fr_1.08fr]">
                         <div class="relative min-h-[320px] overflow-hidden">
                             <img
@@ -293,7 +433,7 @@
 
                             <div class="absolute inset-x-6 bottom-6 text-white">
                                 <div class="flex flex-wrap gap-2">
-                                    <span class="rounded-full bg-white/92 px-3 py-1.5 text-xs font-bold text-[#173F8A] shadow-sm">
+                                    <span class="booking-type-badge rounded-full px-3.5 py-1.5 text-xs font-extrabold tracking-[0.02em]">
                                         {{ $room->roomType?->name ?? 'Phòng nghỉ' }}
                                     </span>
                                     <span class="rounded-full px-3 py-1.5 text-xs font-bold {{ $badgeClasses }} shadow-sm">
@@ -334,7 +474,7 @@
                     </div>
                 </div>
 
-                <div class="booking-shell-card rounded-[2rem] bg-white p-6 sm:p-8">
+                <div class="reveal-on-scroll reveal-delay-2 booking-shell-card rounded-[2rem] bg-white p-6 sm:p-8">
                     <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                         <div>
                             <p class="text-sm font-semibold uppercase tracking-[0.2em] text-[#173F8A]">Thông tin đặt phòng</p>
@@ -514,8 +654,8 @@
                 </div>
             </div>
 
-            <aside class="space-y-6 booking-side-sticky">
-                <div class="booking-shell-card rounded-[2rem] bg-white p-6">
+            <aside class="space-y-6 lg:sticky lg:top-28 lg:self-start">
+                <div class="reveal-on-scroll reveal-delay-1 booking-shell-card rounded-[2rem] bg-white p-6">
                     <div class="flex items-start justify-between gap-4">
                         <div>
                             <p class="text-sm font-semibold uppercase tracking-[0.2em] text-[#173F8A]">Tạm tính booking</p>
@@ -581,7 +721,7 @@
                     </div>
                 </div>
 
-                <div class="booking-shell-card rounded-[2rem] bg-white p-6">
+                <div class="reveal-on-scroll reveal-delay-2 booking-shell-card rounded-[2rem] bg-white p-6">
                     <p class="text-sm font-semibold uppercase tracking-[0.2em] text-[#173F8A]">Hỗ trợ trước khi gửi</p>
                     <div class="mt-4 space-y-4 text-sm leading-7 text-slate-600">
                         <p>• Điền chính xác số điện thoại hoặc email để thuận tiện tra cứu trạng thái booking.</p>
@@ -590,7 +730,7 @@
                     </div>
                 </div>
 
-                <div class="booking-shell-card rounded-[2rem] bg-[#081A45] p-6 text-white">
+                <div class="reveal-on-scroll reveal-delay-3 booking-shell-card rounded-[2rem] bg-[#081A45] p-6 text-white">
                     <p class="text-sm font-semibold uppercase tracking-[0.2em] text-[#9ff4ec]">Sau khi gửi booking</p>
                     <h3 class="mt-3 text-2xl font-black">Theo dõi lại trạng thái rất nhanh</h3>
                     <p class="mt-4 text-sm leading-7 text-slate-300">
@@ -609,6 +749,34 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            const revealItems = document.querySelectorAll('.reveal-on-scroll');
+
+            if (revealItems.length) {
+                const revealNow = (el) => {
+                    if (!el.classList.contains('is-visible')) {
+                        el.classList.add('is-visible');
+                    }
+                };
+
+                if (!('IntersectionObserver' in window)) {
+                    revealItems.forEach(revealNow);
+                } else {
+                    const observer = new IntersectionObserver((entries) => {
+                        entries.forEach((entry) => {
+                            if (entry.isIntersecting) {
+                                revealNow(entry.target);
+                                observer.unobserve(entry.target);
+                            }
+                        });
+                    }, {
+                        threshold: 0.14,
+                        rootMargin: '0px 0px -40px 0px'
+                    });
+
+                    revealItems.forEach((item) => observer.observe(item));
+                }
+            }
+
             const form = document.getElementById('bookingForm');
             if (!form) return;
 
